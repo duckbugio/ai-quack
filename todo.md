@@ -61,7 +61,7 @@
   ```
 
 ### 1.3 Настройка инструментов разработки
-- [ ] Настроить ESLint конфигурацию
+- [x] Настроить ESLint конфигурацию
   - **Шаг 1:** Установить зависимости: `npm install -D eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks`
   - **Шаг 2:** Создать файл `.eslintrc.json` в корне проекта со следующим содержимым:
     ```json
@@ -92,7 +92,7 @@
     ```
   - **Шаг 3:** Добавить скрипт в `package.json`: `"lint": "eslint src --ext .ts,.tsx"`
   - **Шаг 4:** Проверить работу: `npm run lint`
-- [ ] Настроить Prettier
+- [x] Настроить Prettier
   - **Шаг 1:** Установить: `npm install -D prettier`
   - **Шаг 2:** Создать файл `.prettierrc` в корне проекта:
     ```json
@@ -113,7 +113,7 @@
     *.min.js
     ```
   - **Шаг 4:** Добавить скрипты в `package.json`: `"format": "prettier --write \"src/**/*.{ts,tsx,css}\""`
-- [ ] Настроить `.gitignore` для исключения node_modules, dist, и т.д.
+- [x] Настроить `.gitignore` для исключения node_modules, dist, и т.д.
   - **Шаг 1:** Проверить наличие `.gitignore` в корне проекта
   - **Шаг 2:** Убедиться, что в нем есть следующие записи:
     ```
