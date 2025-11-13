@@ -183,7 +183,7 @@
 ## Этап 2: Создание базовой структуры игры
 
 ### 2.1 Создание игрового Canvas компонента
-- [ ] Создать компонент `src/components/Game/GameCanvas.tsx`
+- [x] Создать компонент `src/components/Game/GameCanvas.tsx`
   - **Шаг 1:** Создать файл `src/components/Game/GameCanvas.tsx`
   - **Шаг 2:** Импортировать необходимые зависимости:
     ```typescript
@@ -237,7 +237,7 @@
   - **Шаг 6:** Добавить базовые стили для canvas (опционально через CSS модуль)
 
 ### 2.2 Создание игрового цикла
-- [ ] Создать хук `src/hooks/useGameLoop.ts`
+- [x] Создать хук `src/hooks/useGameLoop.ts`
   - **Шаг 1:** Создать файл `src/hooks/useGameLoop.ts`
   - **Шаг 2:** Определить интерфейс для параметров хука:
     ```typescript
@@ -294,7 +294,7 @@
   - **Шаг 5:** Протестировать хук в компоненте GameCanvas
 
 ### 2.3 Создание системы управления состоянием игры
-- [ ] Создать контекст `src/contexts/GameContext.tsx`
+- [x] Создать контекст `src/contexts/GameContext.tsx`
   - **Шаг 1:** Создать файл `src/contexts/GameContext.tsx`
   - **Шаг 2:** Импортировать необходимые зависимости:
     ```typescript
@@ -374,7 +374,7 @@
   - **Шаг 6:** Обернуть приложение в GameProvider в `main.tsx` или `App.tsx`
 
 ### 2.4 Создание констант игры
-- [ ] Создать файл `src/game/utils/constants.ts`
+- [x] Создать файл `src/game/utils/constants.ts`
   - **Шаг 1:** Создать файл `src/game/utils/constants.ts`
   - **Шаг 2:** Определить все константы игры:
     ```typescript

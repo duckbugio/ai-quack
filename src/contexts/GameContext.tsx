@@ -22,15 +22,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     const saved = localStorage.getItem('duck-game-highscore');
     return saved ? parseInt(saved, 10) : 0;
   });
-
+  
   const startGame = () => {
     setGameState(GameState.PLAYING);
     setScore(0);
   };
-
+  
   const pauseGame = () => setGameState(GameState.PAUSED);
   const resumeGame = () => setGameState(GameState.PLAYING);
-
+  
   const gameOver = () => {
     setGameState(GameState.GAME_OVER);
     if (score > highScore) {
@@ -39,7 +39,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('duck-game-highscore', newHighScore.toString());
     }
   };
-
+  
   const resetGame = () => {
     setGameState(GameState.MENU);
     setScore(0);
