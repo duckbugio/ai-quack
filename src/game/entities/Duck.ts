@@ -14,6 +14,8 @@ export class Duck {
   velocity: Velocity;
   width: number;
   height: number;
+  private wingState: 'up' | 'down' = 'up';
+  private wingAnimationTimer: number = 0;
 
   constructor() {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
@@ -33,15 +35,54 @@ export class Duck {
 
     // Обновление позиции
     this.position.y += this.velocity.vy * (deltaTime / 16);
+
+    // Анимация крыльев
+    this.wingAnimationTimer += deltaTime;
+    if (this.wingAnimationTimer > 100) {
+      // Каждые 100ms
+      this.wingState = this.wingState === 'up' ? 'down' : 'up';
+      this.wingAnimationTimer = 0;
+    }
   }
 
   jump(): void {
     this.velocity.vy = JUMP_FORCE;
+    this.wingState = this.wingState === 'up' ? 'down' : 'up';
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = '#FFA500'; // Оранжевый цвет для утки
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+    // Тело утки (эллипс)
+    ctx.fillStyle = '#FFA500';
+    ctx.beginPath();
+    ctx.ellipse(
+      this.position.x + this.width / 2,
+      this.position.y + this.height / 2,
+      this.width / 2,
+      this.height / 2,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+
+    // Клюв
+    ctx.fillStyle = '#FF8C00';
+    ctx.fillRect(
+      this.position.x + this.width - 10,
+      this.position.y + 10,
+      8,
+      6
+    );
+
+    // Крылья
+    const wingOffset = this.wingState === 'up' ? -5 : 5;
+    ctx.fillStyle = '#FF8C00';
+    ctx.fillRect(
+      this.position.x + 5,
+      this.position.y + 10 + wingOffset,
+      15,
+      8
+    );
 
     // Простой глаз
     ctx.fillStyle = '#000';
@@ -60,5 +101,7 @@ export class Duck {
   reset(): void {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
     this.velocity = { vx: 0, vy: 0 };
+    this.wingState = 'up';
+    this.wingAnimationTimer = 0;
   }
 }
