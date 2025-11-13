@@ -44,14 +44,23 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setGameState(GameState.MENU);
     setScore(0);
   };
-  
-  const incrementScore = () => setScore(prev => prev + 1);
-  
+
+  const incrementScore = () => setScore((prev) => prev + 1);
+
   return (
-    <GameContext.Provider value={{
-      gameState, score, highScore,
-      startGame, pauseGame, resumeGame, gameOver, resetGame, incrementScore
-    }}>
+    <GameContext.Provider
+      value={{
+        gameState,
+        score,
+        highScore,
+        startGame,
+        pauseGame,
+        resumeGame,
+        gameOver,
+        resetGame,
+        incrementScore,
+      }}
+    >
       {children}
     </GameContext.Provider>
   );
