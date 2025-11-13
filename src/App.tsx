@@ -1,16 +1,14 @@
-import { useState } from 'react'
-import './App.css'
+import { GameProvider } from './contexts/GameContext';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
+    <GameProvider>
       <div>
         <h1>Duck Game</h1>
       </div>
-    </>
-  )
+    </GameProvider>
+  );
 }
 
-export default App
+export default App;
