@@ -1,11 +1,18 @@
 import { useEffect, useRef } from 'react';
 
+/**
+ * Опции для игрового цикла
+ */
 interface UseGameLoopOptions {
   update: (deltaTime: number) => void;
   render: () => void;
   isRunning: boolean;
 }
 
+/**
+ * Хук для создания игрового цикла на основе requestAnimationFrame
+ * Обеспечивает стабильный FPS и правильную обработку времени между кадрами
+ */
 export const useGameLoop = ({ update, render, isRunning }: UseGameLoopOptions) => {
   const frameRef = useRef<number>();
   const lastTimeRef = useRef<number>(0);

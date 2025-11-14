@@ -1,11 +1,16 @@
 import { useEffect } from 'react';
 
-export const useKeyboard = (onKeyPress: (key: string) => void) => {
+/**
+ * Хук для обработки нажатий клавиш клавиатуры
+ * Поддерживает пробел и стрелку вверх для прыжка
+ * @param onKeyPress - Callback функция, вызываемая при нажатии клавиши
+ */
+export const useKeyboard = (onKeyPress: () => void) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Space' || event.key === 'ArrowUp') {
         event.preventDefault();
-        onKeyPress(event.code);
+        onKeyPress();
       }
     };
     

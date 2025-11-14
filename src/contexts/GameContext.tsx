@@ -1,6 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { GameState } from '../types/game.types';
 
+/**
+ * Интерфейс контекста игры
+ * Содержит состояние игры и методы для управления им
+ */
 interface GameContextType {
   gameState: GameState;
   score: number;
@@ -15,6 +19,10 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+/**
+ * Провайдер контекста игры
+ * Управляет состоянием игры, счетом и лучшим результатом
+ */
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [gameState, setGameState] = useState<GameState>(GameState.MENU);
   const [score, setScore] = useState(0);
@@ -66,6 +74,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+/**
+ * Хук для использования контекста игры
+ * @throws Error если используется вне GameProvider
+ * @returns Контекст игры
+ */
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) {

@@ -9,6 +9,10 @@ import {
   DUCK_START_Y,
 } from '../utils/constants';
 
+/**
+ * Класс, представляющий игрового персонажа - утку
+ * Управляет позицией, скоростью, физикой и отрисовкой утки
+ */
 export class Duck {
   position: Position;
   velocity: Velocity;
@@ -24,9 +28,15 @@ export class Duck {
     this.height = DUCK_HEIGHT;
   }
 
+  /**
+   * Обновляет позицию утки с учетом гравитации и границ экрана
+   * @param deltaTime - Время, прошедшее с последнего кадра (в миллисекундах)
+   * @param canvasHeight - Высота canvas для проверки границ
+   * @returns true если утка достигла границы экрана (игра окончена)
+   */
   update(deltaTime: number, canvasHeight: number): boolean {
-    // Применение гравитации
-    this.velocity.vy += GRAVITY * (deltaTime / 16); // Нормализация к 60 FPS
+    // Применение гравитации (нормализация к 60 FPS)
+    this.velocity.vy += GRAVITY * (deltaTime / 16);
 
     // Ограничение максимальной скорости падения
     if (this.velocity.vy > MAX_FALL_SPEED) {
@@ -39,19 +49,18 @@ export class Duck {
     // Проверка верхней границы
     if (this.position.y < 0) {
       this.position.y = 0;
-      return true; // Возвращает true если достигнута граница
+      return true;
     }
 
     // Проверка нижней границы
     if (this.position.y + this.height > canvasHeight) {
       this.position.y = canvasHeight - this.height;
-      return true; // Игра окончена
+      return true;
     }
 
-    // Анимация крыльев
+    // Анимация крыльев (каждые 100ms)
     this.wingAnimationTimer += deltaTime;
     if (this.wingAnimationTimer > 100) {
-      // Каждые 100ms
       this.wingState = this.wingState === 'up' ? 'down' : 'up';
       this.wingAnimationTimer = 0;
     }
@@ -59,11 +68,19 @@ export class Duck {
     return false;
   }
 
+  /**
+   * Выполняет прыжок утки
+   * Устанавливает вертикальную скорость вверх и меняет состояние крыльев
+   */
   jump(): void {
     this.velocity.vy = JUMP_FORCE;
     this.wingState = this.wingState === 'up' ? 'down' : 'up';
   }
 
+  /**
+   * Отрисовывает утку на canvas
+   * @param ctx - Контекст canvas для отрисовки
+   */
   draw(ctx: CanvasRenderingContext2D): void {
     // Тело утки (эллипс)
     ctx.fillStyle = '#FFA500';
@@ -88,7 +105,7 @@ export class Duck {
       6
     );
 
-    // Крылья
+    // Крылья (с анимацией)
     const wingOffset = this.wingState === 'up' ? -5 : 5;
     ctx.fillStyle = '#FF8C00';
     ctx.fillRect(
@@ -98,11 +115,15 @@ export class Duck {
       8
     );
 
-    // Простой глаз
+    // Глаз
     ctx.fillStyle = '#000';
     ctx.fillRect(this.position.x + 25, this.position.y + 8, 5, 5);
   }
 
+  /**
+   * Возвращает границы утки для проверки коллизий
+   * @returns Объект с координатами и размерами утки
+   */
   getBounds(): Bounds {
     return {
       x: this.position.x,
@@ -112,6 +133,9 @@ export class Duck {
     };
   }
 
+  /**
+   * Сбрасывает утку в начальное состояние
+   */
   reset(): void {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
     this.velocity = { vx: 0, vy: 0 };
