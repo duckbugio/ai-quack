@@ -955,26 +955,31 @@
     }
     ```
   - **Шаг 2:** Прекратить проверку после первого столкновения (использовать break)
-- [ ] Оптимизировать вычисления границ объектов
-  - **Шаг 1:** Кэшировать границы объектов, если они не изменились:
+- [x] Оптимизировать вычисления границ объектов ✅
+  - **Шаг 1:** Кэшировать границы объектов, если они не изменились: ✅
     ```typescript
-    // В классе Duck добавить кэш
+    // В классе Duck добавлен кэш
     private cachedBounds: Bounds | null = null;
+    private lastPositionX: number;
+    private lastPositionY: number;
     
     getBounds(): Bounds {
-      if (!this.cachedBounds || this.positionChanged) {
-        this.cachedBounds = {
-          x: this.position.x,
-          y: this.position.y,
-          width: this.width,
-          height: this.height,
-        };
-        this.positionChanged = false;
+      if (this.cachedBounds !== null) {
+        return this.cachedBounds;
       }
+      this.cachedBounds = {
+        x: this.position.x,
+        y: this.position.y,
+        width: this.width,
+        height: this.height,
+      };
       return this.cachedBounds;
     }
     ```
-  - **Шаг 2:** Обновлять кэш только при изменении позиции
+  - **Шаг 2:** Обновлять кэш только при изменении позиции ✅
+    - Реализовано в методе update() класса Duck
+    - Реализовано в методе update() класса Obstacle для getTopBounds() и getBottomBounds()
+    - Кэш инвалидируется при изменении позиции и работает для множественных вызовов getBounds в одном кадре
 
 ---
 

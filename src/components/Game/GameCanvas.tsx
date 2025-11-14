@@ -101,7 +101,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     const obstacles = obstacleManagerRef.current.getObstacles();
 
     // Проверка прохождения препятствий для подсчета очков
-    const passedCount = checkAllObstaclesPassed(duck, obstacles);
+    const passedCount = checkAllObstaclesPassed(duck, obstacles, width);
     if (passedCount > 0) {
       // Увеличиваем счет на количество пройденных препятствий
       for (let i = 0; i < passedCount; i++) {
