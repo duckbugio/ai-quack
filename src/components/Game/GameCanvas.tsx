@@ -211,25 +211,58 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Функция отрисовки лучшего результата
   const drawHighScore = useCallback(
-    (ctx: CanvasRenderingContext2D) => {
+    (ctx: CanvasRenderingContext2D, isMenu: boolean = false) => {
       ctx.save();
-      ctx.font = '24px Arial';
-      ctx.fillStyle = '#FFFF00';
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'top';
+      
+      if (isMenu) {
+        // Отображение в меню - более крупный и заметный текст
+        ctx.font = 'bold 32px Arial';
+        ctx.fillStyle = '#FFD700';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
-      const highScoreText = `Best: ${highScore}`;
-      const textX = width - 20;
-      const textY = 20;
+        const highScoreText = `Лучший результат: ${highScore}`;
+        const textX = width / 2;
+        const textY = height / 2 - 50;
 
-      // Обводка для читаемости
-      ctx.strokeText(highScoreText, textX, textY);
-      ctx.fillText(highScoreText, textX, textY);
+        // Тень для лучшей читаемости
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        // Обводка для читаемости
+        ctx.strokeText(highScoreText, textX, textY);
+        ctx.fillText(highScoreText, textX, textY);
+        
+        // Сброс тени
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+      } else {
+        // Отображение во время игры - компактный текст в углу
+        ctx.font = '24px Arial';
+        ctx.fillStyle = '#FFFF00';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'top';
+
+        const highScoreText = `Best: ${highScore}`;
+        const textX = width - 20;
+        const textY = 20;
+
+        // Обводка для читаемости
+        ctx.strokeText(highScoreText, textX, textY);
+        ctx.fillText(highScoreText, textX, textY);
+      }
+      
       ctx.restore();
     },
-    [highScore, width]
+    [highScore, width, height]
   );
 
   // Игровой цикл: отрисовка
@@ -268,10 +301,81 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
       // Отрисовка лучшего результата
       if (highScore > 0) {
-        drawHighScore(ctx);
+        drawHighScore(ctx, false);
       }
     }
-  }, [gameState, width, height, drawScore, drawHighScore, highScore]);
+
+    // Отрисовка в меню и при окончании игры
+    if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
+      // Отрисовка лучшего результата
+      if (highScore > 0) {
+        drawHighScore(ctx, true);
+      }
+      
+      // Отрисовка текущего счета при окончании игры
+      if (gameState === GameState.GAME_OVER && score > 0) {
+        ctx.save();
+        ctx.font = 'bold 36px Arial';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const scoreText = `Ваш счет: ${score}`;
+        const textX = width / 2;
+        const textY = height / 2 + 20;
+
+        // Тень для лучшей читаемости
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        // Обводка для читаемости
+        ctx.strokeText(scoreText, textX, textY);
+        ctx.fillText(scoreText, textX, textY);
+        
+        // Сброс тени
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.restore();
+
+        // Отображение индикации нового рекорда
+        const isNewRecord = score === highScore && score > 0;
+        if (isNewRecord) {
+          ctx.save();
+          ctx.font = 'bold 32px Arial';
+          ctx.fillStyle = '#FFD700';
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 4;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const newRecordText = '🎉 Новый рекорд! 🎉';
+          const recordTextX = width / 2;
+          const recordTextY = height / 2 + 70;
+
+          // Эффектная тень для выделения нового рекорда
+          ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Обводка для читаемости
+          ctx.strokeText(newRecordText, recordTextX, recordTextY);
+          ctx.fillText(newRecordText, recordTextX, recordTextY);
+          
+          // Сброс тени
+          ctx.shadowColor = 'transparent';
+          ctx.shadowBlur = 0;
+          ctx.restore();
+        }
+      }
+    }
+  }, [gameState, width, height, drawScore, drawHighScore, highScore, score]);
 
   // Подключение игрового цикла
   useGameLoop({
@@ -279,6 +383,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     render,
     isRunning: gameState === GameState.PLAYING,
   });
+
+  // Отрисовка в состояниях MENU и GAME_OVER (когда игровой цикл не активен)
+  useEffect(() => {
+    if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
+      render();
+    }
+  }, [gameState, render]);
 
   // Сброс игровых объектов при возврате в меню
   useEffect(() => {
