@@ -794,7 +794,7 @@
   - **Шаг 5:** Протестировать генерацию и движение препятствий
 
 ### 4.3 Визуализация препятствий
-- [ ] Реализовать отрисовку препятствий:
+- [x] Реализовать отрисовку препятствий:
   - **Шаг 1:** Улучшить метод `draw()` в классе Obstacle:
     ```typescript
     draw(ctx: CanvasRenderingContext2D): void {
@@ -820,7 +820,7 @@
     ctx.strokeRect(this.x, 0, this.width, this.topHeight);
     ctx.strokeRect(this.x, CANVAS_HEIGHT - this.bottomHeight, this.width, this.bottomHeight);
     ```
-- [ ] Добавить визуальные эффекты:
+- [x] Добавить визуальные эффекты:
   - **Шаг 1:** Добавить тени для глубины:
     ```typescript
     ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
