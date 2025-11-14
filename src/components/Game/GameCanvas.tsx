@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { GameState } from '../../types/game.types';
 import { useKeyboard } from '../../hooks/useKeyboard';
@@ -36,6 +36,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const obstacleManagerRef = useRef<ObstacleManager | null>(null);
   // Флаг для предотвращения повторных вызовов gameOver в одном кадре
   const gameOverCalledRef = useRef<boolean>(false);
+  
+  // Состояние для анимации счета
+  const [scoreScale, setScoreScale] = useState(1);
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
@@ -152,6 +155,19 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     [gameState, height, checkCollisions, gameOver]
   );
 
+  // Анимация счета при изменении
+  const prevScoreRef = useRef(score);
+  useEffect(() => {
+    if (gameState === GameState.PLAYING && score > prevScoreRef.current) {
+      setScoreScale(1.3);
+      const timer = setTimeout(() => setScoreScale(1), 200);
+      prevScoreRef.current = score;
+      return () => clearTimeout(timer);
+    } else if (gameState === GameState.MENU) {
+      prevScoreRef.current = 0;
+    }
+  }, [score, gameState]);
+
   // Функция отрисовки счета
   const drawScore = useCallback(
     (ctx: CanvasRenderingContext2D) => {
@@ -161,18 +177,36 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = 3;
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
+      ctx.textBaseline = 'middle';
 
       const scoreText = score.toString();
       const textX = width / 2;
-      const textY = 20;
+      const textY = 60;
+
+      // Применение анимации масштабирования
+      ctx.translate(textX, textY);
+      ctx.scale(scoreScale, scoreScale);
+      ctx.translate(-textX, -textY);
+
+      // Тень для лучшей читаемости
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 4;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
 
       // Обводка для читаемости
       ctx.strokeText(scoreText, textX, textY);
       ctx.fillText(scoreText, textX, textY);
+      
+      // Сброс тени
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      
       ctx.restore();
     },
-    [score, width]
+    [score, width, scoreScale]
   );
 
   // Функция отрисовки лучшего результата
@@ -251,6 +285,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     if (gameState === GameState.MENU) {
       // Сбрасываем флаг при возврате в меню
       gameOverCalledRef.current = false;
+      // Сбрасываем анимацию счета
+      setScoreScale(1);
       if (duckRef.current) {
         duckRef.current.reset();
       }
