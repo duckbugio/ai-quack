@@ -1,16 +1,47 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
+import { useGame } from '../../contexts/GameContext';
+import { GameState } from '../../types/game.types';
+import { useKeyboard } from '../../hooks/useKeyboard';
 import styles from './GameCanvas.module.css';
 
 interface GameCanvasProps {
   width?: number;
   height?: number;
+  onJump?: () => void;
 }
 
 export const GameCanvas: React.FC<GameCanvasProps> = ({ 
   width = 800, 
-  height = 600 
+  height = 600,
+  onJump
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { gameState, startGame } = useGame();
+  
+  const handleJump = useCallback(() => {
+    if (gameState === GameState.PLAYING && onJump) {
+      onJump();
+    }
+  }, [gameState, onJump]);
+  
+  const handleCanvasClick = useCallback(() => {
+    if (gameState === GameState.PLAYING && onJump) {
+      onJump();
+    } else if (gameState === GameState.MENU) {
+      startGame();
+    }
+  }, [gameState, onJump, startGame]);
+  
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    if (gameState === GameState.PLAYING && onJump) {
+      onJump();
+    } else if (gameState === GameState.MENU) {
+      startGame();
+    }
+  }, [gameState, onJump, startGame]);
+  
+  useKeyboard(handleJump);
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,5 +73,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  return <canvas ref={canvasRef} className={styles.canvas} />;
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className={styles.canvas}
+      onClick={handleCanvasClick}
+      onTouchStart={handleTouchStart}
+    />
+  );
 };
