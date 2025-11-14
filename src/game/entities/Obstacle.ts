@@ -6,6 +6,10 @@ import {
   CANVAS_HEIGHT,
 } from '../utils/constants';
 
+/**
+ * Класс, представляющий препятствие в игре
+ * Управляет позицией, отрисовкой и коллизиями препятствия
+ */
 export class Obstacle {
   x: number;
   topHeight: number;
