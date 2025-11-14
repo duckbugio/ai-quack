@@ -27,8 +27,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [gameState, setGameState] = useState<GameState>(GameState.MENU);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => {
-    const saved = localStorage.getItem('duck-game-highscore');
-    return saved ? parseInt(saved, 10) : 0;
+    try {
+      const saved = localStorage.getItem('duck-game-highscore');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        // Валидация: проверяем, что это валидное неотрицательное число
+        if (!isNaN(parsed) && parsed >= 0) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      // localStorage может быть недоступен (например, в приватном режиме)
+      console.warn('Не удалось загрузить лучший результат из localStorage:', error);
+    }
+    return 0;
   });
   
   const startGame = () => {
@@ -44,7 +56,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     if (score > highScore) {
       const newHighScore = score;
       setHighScore(newHighScore);
-      localStorage.setItem('duck-game-highscore', newHighScore.toString());
+      try {
+        localStorage.setItem('duck-game-highscore', newHighScore.toString());
+      } catch (error) {
+        // localStorage может быть недоступен (например, переполнение или приватный режим)
+        console.warn('Не удалось сохранить лучший результат в localStorage:', error);
+      }
     }
   };
   
