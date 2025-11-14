@@ -39,6 +39,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Состояние для анимации счета
   const [scoreScale, setScoreScale] = useState(1);
+  
+  // Состояние для движения облаков
+  const cloudOffsetRef = useRef<number>(0);
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
@@ -119,6 +122,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Игровой цикл: обновление состояния
   const update = useCallback(
     (deltaTime: number) => {
+      // Обновление облаков (работает всегда для плавной анимации)
+      updateClouds(deltaTime);
+      
       if (gameState !== GameState.PLAYING) {
         // Сбрасываем флаг при выходе из состояния PLAYING
         gameOverCalledRef.current = false;
@@ -152,7 +158,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     },
-    [gameState, height, checkCollisions, gameOver]
+    [gameState, height, checkCollisions, gameOver, updateClouds]
   );
 
   // Анимация счета при изменении
@@ -265,6 +271,124 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     [highScore, width, height]
   );
 
+  // Функция отрисовки неба с градиентом
+  const drawSky = useCallback(
+    (ctx: CanvasRenderingContext2D) => {
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, '#87CEEB'); // Небесно-голубой
+      gradient.addColorStop(1, '#E0F6FF'); // Светло-голубой
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+      
+      // Отрисовка солнца
+      const sunX = width - 150;
+      const sunY = 80;
+      const sunRadius = 40;
+      
+      // Внешнее свечение солнца
+      const sunGradient = ctx.createRadialGradient(
+        sunX, sunY, 0,
+        sunX, sunY, sunRadius * 1.5
+      );
+      sunGradient.addColorStop(0, 'rgba(255, 255, 200, 0.6)');
+      sunGradient.addColorStop(0.7, 'rgba(255, 255, 150, 0.3)');
+      sunGradient.addColorStop(1, 'rgba(255, 255, 100, 0)');
+      ctx.fillStyle = sunGradient;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Основное солнце
+      const sunMainGradient = ctx.createRadialGradient(
+        sunX, sunY, 0,
+        sunX, sunY, sunRadius
+      );
+      sunMainGradient.addColorStop(0, '#FFEB3B'); // Ярко-желтый
+      sunMainGradient.addColorStop(1, '#FFC107'); // Золотистый
+      ctx.fillStyle = sunMainGradient;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fill();
+    },
+    [width, height]
+  );
+
+  // Функция отрисовки облаков с улучшенной визуализацией
+  const drawClouds = useCallback(
+    (ctx: CanvasRenderingContext2D) => {
+      const offset = cloudOffsetRef.current;
+
+      // Вспомогательная функция для отрисовки одного облака
+      const drawSingleCloud = (
+        x: number,
+        y: number,
+        size: number,
+        opacity: number = 0.8
+      ) => {
+        ctx.save();
+        
+        // Тень облака для объема
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        
+        // Градиент для облака (более реалистичный вид)
+        const cloudGradient = ctx.createLinearGradient(x - size, y, x + size, y);
+        cloudGradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.9})`);
+        cloudGradient.addColorStop(0.5, `rgba(255, 255, 255, ${opacity})`);
+        cloudGradient.addColorStop(1, `rgba(255, 255, 255, ${opacity * 0.9})`);
+        ctx.fillStyle = cloudGradient;
+        
+        // Отрисовка облака из нескольких кругов
+        ctx.beginPath();
+        const r1 = size * 0.8;
+        const r2 = size;
+        const r3 = size * 0.9;
+        ctx.arc(x - size * 0.3, y, r1, 0, Math.PI * 2);
+        ctx.arc(x, y, r2, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.3, y, r3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      };
+
+      // Облако 1 (большое)
+      drawSingleCloud(200 + offset, 100, 35, 0.85);
+      
+      // Облако 2 (среднее)
+      drawSingleCloud(500 + offset, 80, 30, 0.75);
+      
+      // Облако 3 (большое)
+      drawSingleCloud(700 + offset, 120, 32, 0.8);
+      
+      // Облако 4 (маленькое, дальнее)
+      drawSingleCloud(350 + offset, 150, 25, 0.6);
+      
+      // Облако 5 (среднее)
+      drawSingleCloud(600 + offset, 60, 28, 0.7);
+
+      // Облака для бесшовной прокрутки
+      drawSingleCloud(200 + offset - width, 100, 35, 0.85);
+      drawSingleCloud(500 + offset - width, 80, 30, 0.75);
+      drawSingleCloud(700 + offset - width, 120, 32, 0.8);
+      drawSingleCloud(350 + offset - width, 150, 25, 0.6);
+      drawSingleCloud(600 + offset - width, 60, 28, 0.7);
+    },
+    [width]
+  );
+
+  // Функция обновления движения облаков
+  const updateClouds = useCallback(
+    (deltaTime: number) => {
+      cloudOffsetRef.current += 0.1 * (deltaTime / 16);
+      if (cloudOffsetRef.current > width) {
+        cloudOffsetRef.current = 0;
+      }
+    },
+    [width]
+  );
+
   // Игровой цикл: отрисовка
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -276,12 +400,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     // Очистка canvas
     ctx.clearRect(0, 0, width, height);
 
-    // Отрисовка фона (небо)
-    const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, '#87CEEB');
-    gradient.addColorStop(1, '#E0F6FF');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
+    // Отрисовка фона (небо с градиентом)
+    drawSky(ctx);
+    
+    // Отрисовка облаков
+    drawClouds(ctx);
 
     // Отрисовка игровых объектов только во время игры
     if (gameState === GameState.PLAYING) {
@@ -375,7 +498,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         }
       }
     }
-  }, [gameState, width, height, drawScore, drawHighScore, highScore, score]);
+  }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds]);
 
   // Подключение игрового цикла
   useGameLoop({
@@ -388,8 +511,32 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   useEffect(() => {
     if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
       render();
+      
+      // Анимация облаков в меню
+      let animationFrameId: number;
+      let lastTime = performance.now();
+      
+      const animateClouds = (currentTime: number) => {
+        const deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+        
+        updateClouds(deltaTime);
+        render();
+        
+        if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
+          animationFrameId = requestAnimationFrame(animateClouds);
+        }
+      };
+      
+      animationFrameId = requestAnimationFrame(animateClouds);
+      
+      return () => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      };
     }
-  }, [gameState, render]);
+  }, [gameState, render, updateClouds]);
 
   // Сброс игровых объектов при возврате в меню
   useEffect(() => {
