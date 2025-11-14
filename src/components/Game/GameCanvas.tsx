@@ -11,7 +11,7 @@ import {
 import {
   checkAllObstaclesPassed,
 } from '../../game/systems/ScoreSystem';
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../../game/utils/constants';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, GROUND_SPEED } from '../../game/utils/constants';
 import styles from './GameCanvas.module.css';
 
 interface GameCanvasProps {
@@ -42,6 +42,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Состояние для движения облаков
   const cloudOffsetRef = useRef<number>(0);
+  
+  // Состояние для движения земли
+  const groundOffsetRef = useRef<number>(0);
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
@@ -119,11 +122,25 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     return checkAllCollisions(duck, obstacles, width);
   }, [incrementScore, width]);
 
+  // Функция обновления движения земли
+  const updateGround = useCallback(
+    (deltaTime: number) => {
+      groundOffsetRef.current += GROUND_SPEED * (deltaTime / 16);
+      if (groundOffsetRef.current > width) {
+        groundOffsetRef.current = 0;
+      }
+    },
+    [width]
+  );
+
   // Игровой цикл: обновление состояния
   const update = useCallback(
     (deltaTime: number) => {
       // Обновление облаков (работает всегда для плавной анимации)
       updateClouds(deltaTime);
+      
+      // Обновление земли (работает всегда для плавной анимации)
+      updateGround(deltaTime);
       
       if (gameState !== GameState.PLAYING) {
         // Сбрасываем флаг при выходе из состояния PLAYING
@@ -158,7 +175,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     },
-    [gameState, height, checkCollisions, gameOver, updateClouds]
+    [gameState, height, checkCollisions, gameOver, updateClouds, updateGround]
   );
 
   // Анимация счета при изменении
@@ -389,6 +406,78 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     [width]
   );
 
+  // Функция отрисовки текстуры травы с улучшенной визуализацией
+  const drawGrassTexture = useCallback(
+    (ctx: CanvasRenderingContext2D, groundY: number, offset: number) => {
+      ctx.save();
+      
+      // Вариативность цвета травинок для более реалистичного вида
+      const grassColors = ['#228B22', '#32CD32', '#2E8B57'];
+      
+      // Отрисовка травинок с учетом смещения для анимации
+      for (let i = -offset; i < width + 20; i += 10) {
+        const x = (i + offset) % (width + 20);
+        const colorIndex = Math.floor((x / 10) % grassColors.length);
+        const height = 8 + Math.sin(x * 0.1) * 3; // Вариативность высоты
+        
+        ctx.strokeStyle = grassColors[colorIndex];
+        // Детерминированная вариативность толщины на основе позиции
+        ctx.lineWidth = 1.5 + Math.abs(Math.sin(x * 0.15)) * 0.5;
+        
+        ctx.beginPath();
+        ctx.moveTo(x, groundY);
+        ctx.lineTo(x + 4 + Math.sin(x * 0.2) * 2, groundY - height);
+        ctx.stroke();
+      }
+      
+      ctx.restore();
+    },
+    [width]
+  );
+
+  // Функция отрисовки земли с улучшенной визуализацией
+  const drawGround = useCallback(
+    (ctx: CanvasRenderingContext2D) => {
+      const groundHeight = 50;
+      const groundY = height - groundHeight;
+      const offset = groundOffsetRef.current;
+      
+      // Градиент для травы (более реалистичный вид)
+      const grassGradient = ctx.createLinearGradient(0, groundY, 0, groundY + 30);
+      grassGradient.addColorStop(0, '#90EE90'); // Светло-зеленый сверху
+      grassGradient.addColorStop(0.5, '#7CCD7C'); // Средний зеленый
+      grassGradient.addColorStop(1, '#6B8E6B'); // Темно-зеленый снизу
+      ctx.fillStyle = grassGradient;
+      ctx.fillRect(0, groundY, width, 30);
+      
+      // Земля (нижний слой) с градиентом
+      const earthGradient = ctx.createLinearGradient(0, groundY + 30, 0, height);
+      earthGradient.addColorStop(0, '#8B4513'); // Коричневый сверху
+      earthGradient.addColorStop(1, '#654321'); // Темно-коричневый снизу
+      ctx.fillStyle = earthGradient;
+      ctx.fillRect(0, groundY + 30, width, 20);
+      
+      // Текстура травы
+      drawGrassTexture(ctx, groundY, offset);
+      
+      // Декоративные элементы: небольшие камни (опционально, для атмосферы)
+      ctx.save();
+      ctx.fillStyle = '#696969';
+      ctx.globalAlpha = 0.3;
+      // Рисуем несколько небольших камней
+      for (let i = 0; i < 3; i++) {
+        const stoneX = (offset + i * 250) % (width + 50);
+        const stoneY = groundY + 25;
+        ctx.beginPath();
+        ctx.arc(stoneX, stoneY, 3 + Math.sin(stoneX) * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    },
+    [width, height, drawGrassTexture]
+  );
+
   // Игровой цикл: отрисовка
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -405,6 +494,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     
     // Отрисовка облаков
     drawClouds(ctx);
+    
+    // Отрисовка земли
+    drawGround(ctx);
 
     // Отрисовка игровых объектов только во время игры
     if (gameState === GameState.PLAYING) {
@@ -498,7 +590,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         }
       }
     }
-  }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds]);
+  }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround]);
 
   // Подключение игрового цикла
   useGameLoop({
@@ -512,23 +604,24 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
       render();
       
-      // Анимация облаков в меню
+      // Анимация облаков и земли в меню
       let animationFrameId: number;
       let lastTime = performance.now();
       
-      const animateClouds = (currentTime: number) => {
+      const animateBackground = (currentTime: number) => {
         const deltaTime = currentTime - lastTime;
         lastTime = currentTime;
         
         updateClouds(deltaTime);
+        updateGround(deltaTime);
         render();
         
         if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
-          animationFrameId = requestAnimationFrame(animateClouds);
+          animationFrameId = requestAnimationFrame(animateBackground);
         }
       };
       
-      animationFrameId = requestAnimationFrame(animateClouds);
+      animationFrameId = requestAnimationFrame(animateBackground);
       
       return () => {
         if (animationFrameId) {
@@ -536,7 +629,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         }
       };
     }
-  }, [gameState, render, updateClouds]);
+  }, [gameState, render, updateClouds, updateGround]);
 
   // Сброс игровых объектов при возврате в меню
   useEffect(() => {
@@ -545,6 +638,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       gameOverCalledRef.current = false;
       // Сбрасываем анимацию счета
       setScoreScale(1);
+      // Сбрасываем смещение земли (опционально, можно оставить для непрерывной анимации)
+      // groundOffsetRef.current = 0;
       if (duckRef.current) {
         duckRef.current.reset();
       }
