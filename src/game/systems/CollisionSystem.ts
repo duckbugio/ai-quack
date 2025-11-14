@@ -9,6 +9,16 @@ import { Obstacle } from '../entities/Obstacle';
  * @returns true если прямоугольники пересекаются
  */
 export function checkCollision(rect1: Bounds, rect2: Bounds): boolean {
+  // Валидация входных данных
+  if (
+    rect1.width <= 0 ||
+    rect1.height <= 0 ||
+    rect2.width <= 0 ||
+    rect2.height <= 0
+  ) {
+    return false;
+  }
+
   return (
     rect1.x < rect2.x + rect2.width &&
     rect1.x + rect1.width > rect2.x &&
@@ -27,6 +37,11 @@ export function checkDuckObstacleCollision(
   duck: Duck,
   obstacle: Obstacle
 ): boolean {
+  // Валидация входных данных
+  if (!duck || !obstacle) {
+    return false;
+  }
+
   const duckBounds = duck.getBounds();
   const topBounds = obstacle.getTopBounds();
   const bottomBounds = obstacle.getBottomBounds();
@@ -47,6 +62,11 @@ export function checkDuckBoundsCollision(
   duck: Duck,
   canvasHeight: number
 ): boolean {
+  // Валидация входных данных
+  if (!duck || canvasHeight <= 0) {
+    return false;
+  }
+
   const bounds = duck.getBounds();
   return bounds.y < 0 || bounds.y + bounds.height > canvasHeight;
 }
@@ -64,9 +84,14 @@ export function checkAllCollisions(
   obstacles: Obstacle[],
   canvasWidth: number
 ): boolean {
+  // Валидация входных данных
+  if (!duck || !obstacles || obstacles.length === 0 || canvasWidth <= 0) {
+    return false;
+  }
+
   // Проверяем только препятствия в зоне видимости (оптимизация)
   const relevantObstacles = obstacles.filter(
-    (obs) => obs.x < canvasWidth + 50 && obs.x + obs.width > -50
+    (obs) => obs && obs.x < canvasWidth + 50 && obs.x + obs.width > -50
   );
 
   for (const obstacle of relevantObstacles) {
