@@ -11,8 +11,13 @@ export function checkObstaclePassed(
   duck: Duck,
   obstacle: Obstacle
 ): boolean {
-  // Препятствие считается пройденным, если утка прошла его центр
-  if (!obstacle.passed && duck.position.x > obstacle.x + obstacle.width) {
+  // Защита от edge cases
+  if (!duck || !obstacle || obstacle.passed) {
+    return false;
+  }
+  
+  // Препятствие считается пройденным, если утка прошла его правую границу
+  if (duck.position.x > obstacle.x + obstacle.width) {
     obstacle.passed = true;
     return true;
   }
@@ -25,8 +30,10 @@ export function checkObstaclePassed(
  * @returns Множитель сложности (начинается с 1.0)
  */
 export function getDifficultyMultiplier(score: number): number {
+  // Защита от отрицательных значений
+  const safeScore = Math.max(0, score);
   // Увеличиваем скорость каждые 10 очков на 5%
-  return 1 + Math.floor(score / 10) * 0.05;
+  return 1 + Math.floor(safeScore / 10) * 0.05;
 }
 
 /**
@@ -42,14 +49,21 @@ export function checkAllObstaclesPassed(
   obstacles: Obstacle[],
   canvasWidth: number = 800
 ): number {
-  // Оптимизация: проверяем только препятствия в зоне видимости утки
-  // и те, которые еще не были пройдены
+  // Защита от edge cases
+  if (!duck || !obstacles || obstacles.length === 0) {
+    return 0;
+  }
+  
+  // Оптимизация: проверяем только препятствия, которые еще не были пройдены
+  // и находятся в зоне проверки (впереди утки или недавно пройденные)
   const relevantObstacles = obstacles.filter(
     (obs) =>
       obs &&
       !obs.passed && // Пропускаем уже пройденные препятствия
-      obs.x + obs.width >= duck.position.x - 50 && // Впереди утки или рядом
-      obs.x <= duck.position.x + duck.width + 50 // Не слишком далеко впереди
+      // Проверяем препятствия, которые утка может пройти или уже прошла
+      // Расширяем зону проверки, чтобы не пропустить быстрое прохождение
+      obs.x + obs.width >= duck.position.x - 100 && // Включаем препятствия немного позади
+      obs.x <= duck.position.x + duck.width + 50 // И впереди утки
   );
 
   let passedCount = 0;
