@@ -24,7 +24,7 @@ export class Duck {
     this.height = DUCK_HEIGHT;
   }
 
-  update(deltaTime: number): void {
+  update(deltaTime: number, canvasHeight: number): boolean {
     // Применение гравитации
     this.velocity.vy += GRAVITY * (deltaTime / 16); // Нормализация к 60 FPS
 
@@ -36,6 +36,18 @@ export class Duck {
     // Обновление позиции
     this.position.y += this.velocity.vy * (deltaTime / 16);
 
+    // Проверка верхней границы
+    if (this.position.y < 0) {
+      this.position.y = 0;
+      return true; // Возвращает true если достигнута граница
+    }
+
+    // Проверка нижней границы
+    if (this.position.y + this.height > canvasHeight) {
+      this.position.y = canvasHeight - this.height;
+      return true; // Игра окончена
+    }
+
     // Анимация крыльев
     this.wingAnimationTimer += deltaTime;
     if (this.wingAnimationTimer > 100) {
@@ -43,6 +55,8 @@ export class Duck {
       this.wingState = this.wingState === 'up' ? 'down' : 'up';
       this.wingAnimationTimer = 0;
     }
+
+    return false;
   }
 
   jump(): void {
