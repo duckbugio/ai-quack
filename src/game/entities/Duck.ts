@@ -20,12 +20,17 @@ export class Duck {
   height: number;
   private wingState: 'up' | 'down' = 'up';
   private wingAnimationTimer: number = 0;
+  private cachedBounds: Bounds | null = null;
+  private lastPositionX: number = DUCK_START_X;
+  private lastPositionY: number = DUCK_START_Y;
 
   constructor() {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
     this.velocity = { vx: 0, vy: 0 };
     this.width = DUCK_WIDTH;
     this.height = DUCK_HEIGHT;
+    this.lastPositionX = DUCK_START_X;
+    this.lastPositionY = DUCK_START_Y;
   }
 
   /**
@@ -49,13 +54,24 @@ export class Duck {
     // Проверка верхней границы
     if (this.position.y < 0) {
       this.position.y = 0;
+      // Инвалидируем кэш при изменении позиции
+      this.cachedBounds = null;
       return true;
     }
 
     // Проверка нижней границы
     if (this.position.y + this.height > canvasHeight) {
       this.position.y = canvasHeight - this.height;
+      // Инвалидируем кэш при изменении позиции
+      this.cachedBounds = null;
       return true;
+    }
+
+    // Инвалидируем кэш, если позиция изменилась
+    if (this.position.x !== this.lastPositionX || this.position.y !== this.lastPositionY) {
+      this.cachedBounds = null;
+      this.lastPositionX = this.position.x;
+      this.lastPositionY = this.position.y;
     }
 
     // Анимация крыльев (каждые 100ms)
@@ -122,15 +138,24 @@ export class Duck {
 
   /**
    * Возвращает границы утки для проверки коллизий
+   * Использует кэширование для оптимизации производительности
    * @returns Объект с координатами и размерами утки
    */
   getBounds(): Bounds {
-    return {
+    // Возвращаем кэшированные границы, если позиция не изменилась
+    if (this.cachedBounds !== null) {
+      return this.cachedBounds;
+    }
+
+    // Вычисляем и кэшируем границы
+    this.cachedBounds = {
       x: this.position.x,
       y: this.position.y,
       width: this.width,
       height: this.height,
     };
+
+    return this.cachedBounds;
   }
 
   /**
@@ -141,5 +166,8 @@ export class Duck {
     this.velocity = { vx: 0, vy: 0 };
     this.wingState = 'up';
     this.wingAnimationTimer = 0;
+    this.cachedBounds = null;
+    this.lastPositionX = DUCK_START_X;
+    this.lastPositionY = DUCK_START_Y;
   }
 }

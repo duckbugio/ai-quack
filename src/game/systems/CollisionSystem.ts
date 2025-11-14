@@ -89,14 +89,16 @@ export function checkAllCollisions(
     return false;
   }
 
-  // Проверяем только препятствия в зоне видимости (оптимизация)
+  // Оптимизация: проверяем только препятствия в зоне видимости
+  // Добавляем небольшой запас (50px) для учета движения утки
   const relevantObstacles = obstacles.filter(
     (obs) => obs && obs.x < canvasWidth + 50 && obs.x + obs.width > -50
   );
 
+  // Ранний выход после первого обнаруженного столкновения
   for (const obstacle of relevantObstacles) {
     if (checkDuckObstacleCollision(duck, obstacle)) {
-      return true;
+      return true; // Прекращаем проверку после первого столкновения
     }
   }
 

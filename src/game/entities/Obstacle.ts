@@ -17,11 +17,15 @@ export class Obstacle {
   width: number;
   gap: number;
   passed: boolean; // Для отслеживания прохождения уткой
+  private cachedTopBounds: Bounds | null = null;
+  private cachedBottomBounds: Bounds | null = null;
+  private lastX: number;
 
   constructor(x: number, canvasHeight: number) {
     this.x = x;
     this.width = PIPE_WIDTH;
     this.gap = PIPE_GAP;
+    this.lastX = x;
 
     // Случайная высота верхней части (минимум 50px, максимум 300px)
     const minHeight = 50;
@@ -34,7 +38,17 @@ export class Obstacle {
   }
 
   update(deltaTime: number): void {
-    this.x -= OBSTACLE_SPEED * (deltaTime / 16);
+    const newX = this.x - OBSTACLE_SPEED * (deltaTime / 16);
+    
+    // Инвалидируем кэш при изменении позиции (препятствие движется каждый кадр)
+    // Кэш будет работать для множественных вызовов getBounds в одном кадре
+    if (Math.abs(newX - this.lastX) > 0.001) {
+      this.cachedTopBounds = null;
+      this.cachedBottomBounds = null;
+    }
+    
+    this.x = newX;
+    this.lastX = newX;
   }
 
   draw(ctx: CanvasRenderingContext2D): void {
@@ -115,22 +129,52 @@ export class Obstacle {
     ctx.restore();
   }
 
+  /**
+   * Возвращает границы верхней части препятствия
+   * Использует кэширование для оптимизации производительности
+   * @returns Объект с координатами и размерами верхней части
+   */
   getTopBounds(): Bounds {
-    return {
+    // Возвращаем кэшированные границы, если они есть
+    // Кэш работает для множественных вызовов getBounds в одном кадре
+    // Кэш инвалидируется в методе update при изменении позиции
+    if (this.cachedTopBounds !== null) {
+      return this.cachedTopBounds;
+    }
+
+    // Вычисляем и кэшируем границы
+    this.cachedTopBounds = {
       x: this.x,
       y: 0,
       width: this.width,
       height: this.topHeight,
     };
+
+    return this.cachedTopBounds;
   }
 
+  /**
+   * Возвращает границы нижней части препятствия
+   * Использует кэширование для оптимизации производительности
+   * @returns Объект с координатами и размерами нижней части
+   */
   getBottomBounds(): Bounds {
-    return {
+    // Возвращаем кэшированные границы, если они есть
+    // Кэш работает для множественных вызовов getBounds в одном кадре
+    // Кэш инвалидируется в методе update при изменении позиции
+    if (this.cachedBottomBounds !== null) {
+      return this.cachedBottomBounds;
+    }
+
+    // Вычисляем и кэшируем границы
+    this.cachedBottomBounds = {
       x: this.x,
       y: CANVAS_HEIGHT - this.bottomHeight,
       width: this.width,
       height: this.bottomHeight,
     };
+
+    return this.cachedBottomBounds;
   }
 
   isOffScreen(): boolean {

@@ -31,16 +31,29 @@ export function getDifficultyMultiplier(score: number): number {
 
 /**
  * Проверяет все препятствия и возвращает количество новых пройденных
+ * Оптимизированная версия - проверяет только препятствия в зоне видимости
  * @param duck - Экземпляр утки
  * @param obstacles - Массив препятствий
+ * @param canvasWidth - Ширина canvas для оптимизации
  * @returns Количество новых пройденных препятствий
  */
 export function checkAllObstaclesPassed(
   duck: Duck,
-  obstacles: Obstacle[]
+  obstacles: Obstacle[],
+  canvasWidth: number = 800
 ): number {
+  // Оптимизация: проверяем только препятствия в зоне видимости утки
+  // и те, которые еще не были пройдены
+  const relevantObstacles = obstacles.filter(
+    (obs) =>
+      obs &&
+      !obs.passed && // Пропускаем уже пройденные препятствия
+      obs.x + obs.width >= duck.position.x - 50 && // Впереди утки или рядом
+      obs.x <= duck.position.x + duck.width + 50 // Не слишком далеко впереди
+  );
+
   let passedCount = 0;
-  obstacles.forEach((obstacle) => {
+  relevantObstacles.forEach((obstacle) => {
     if (checkObstaclePassed(duck, obstacle)) {
       passedCount++;
     }
