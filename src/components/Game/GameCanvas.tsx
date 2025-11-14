@@ -5,7 +5,9 @@ import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { ObstacleManager } from '../../game/systems/ObstacleManager';
 import { Duck } from '../../game/entities/Duck';
-import { checkAllCollisions } from '../../game/systems/CollisionSystem';
+import {
+  checkAllCollisions,
+} from '../../game/systems/CollisionSystem';
 import {
   checkAllObstaclesPassed,
 } from '../../game/systems/ScoreSystem';
@@ -32,6 +34,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Инициализация игровых объектов (создаются один раз)
   const duckRef = useRef<Duck | null>(null);
   const obstacleManagerRef = useRef<ObstacleManager | null>(null);
+  // Флаг для предотвращения повторных вызовов gameOver в одном кадре
+  const gameOverCalledRef = useRef<boolean>(false);
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
@@ -88,7 +92,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Функция проверки коллизий и подсчета очков
   const checkCollisions = useCallback(() => {
-    if (!duckRef.current || !obstacleManagerRef.current) return false;
+    // Не проверяем коллизии, если игра уже окончена в этом кадре
+    if (gameOverCalledRef.current || !duckRef.current || !obstacleManagerRef.current) {
+      return false;
+    }
     
     const duck = duckRef.current;
     const obstacles = obstacleManagerRef.current.getObstacles();
@@ -109,16 +116,24 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Игровой цикл: обновление состояния
   const update = useCallback(
     (deltaTime: number) => {
-      if (gameState !== GameState.PLAYING) return;
+      if (gameState !== GameState.PLAYING) {
+        // Сбрасываем флаг при выходе из состояния PLAYING
+        gameOverCalledRef.current = false;
+        return;
+      }
       
       if (!duckRef.current || !obstacleManagerRef.current) return;
+      
+      // Сбрасываем флаг в начале каждого кадра
+      gameOverCalledRef.current = false;
       
       const duck = duckRef.current;
       const obstacleManager = obstacleManagerRef.current;
       
-      // Обновление утки
+      // Обновление утки (включает проверку границ)
       const hitBoundary = duck.update(deltaTime, height);
       if (hitBoundary) {
+        gameOverCalledRef.current = true;
         gameOver();
         return;
       }
@@ -126,9 +141,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Обновление препятствий
       obstacleManager.update(deltaTime);
 
-      // Проверка коллизий и подсчет очков
+      // Проверка коллизий с препятствиями и подсчет очков
+      // Проверка границ уже выполнена в duck.update(), дублирование не требуется
       if (checkCollisions()) {
+        gameOverCalledRef.current = true;
         gameOver();
+        return;
       }
     },
     [gameState, height, checkCollisions, gameOver]
@@ -231,6 +249,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Сброс игровых объектов при возврате в меню
   useEffect(() => {
     if (gameState === GameState.MENU) {
+      // Сбрасываем флаг при возврате в меню
+      gameOverCalledRef.current = false;
       if (duckRef.current) {
         duckRef.current.reset();
       }
