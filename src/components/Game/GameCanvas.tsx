@@ -5,10 +5,7 @@ import { useKeyboard } from '../../hooks/useKeyboard';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { ObstacleManager } from '../../game/systems/ObstacleManager';
 import { Duck } from '../../game/entities/Duck';
-import {
-  checkAllCollisions,
-  checkDuckBoundsCollision,
-} from '../../game/systems/CollisionSystem';
+import { checkAllCollisions } from '../../game/systems/CollisionSystem';
 import {
   checkAllObstaclesPassed,
 } from '../../game/systems/ScoreSystem';
@@ -121,7 +118,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       
       // Обновление утки
       const hitBoundary = duck.update(deltaTime, height);
-      if (hitBoundary || checkDuckBoundsCollision(duck, height)) {
+      if (hitBoundary) {
         gameOver();
         return;
       }
