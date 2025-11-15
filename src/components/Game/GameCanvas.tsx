@@ -12,6 +12,7 @@ import {
   checkAllObstaclesPassed,
 } from '../../game/systems/ScoreSystem';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, GROUND_SPEED } from '../../game/utils/constants';
+import { soundManager } from '../../game/utils/SoundManager';
 import styles from './GameCanvas.module.css';
 
 interface GameCanvasProps {
@@ -85,6 +86,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const handleJump = useCallback(() => {
     if (gameState === GameState.PLAYING && duckRef.current) {
       duckRef.current.jump();
+      soundManager.play('jump');
     }
   }, [gameState]);
   
@@ -199,6 +201,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Увеличиваем счет на количество пройденных препятствий
       for (let i = 0; i < passedCount; i++) {
         incrementScore();
+        // Разрешаем одновременное воспроизведение для быстрых последовательных очков
+        soundManager.play('score', true);
       }
     }
 
@@ -315,6 +319,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const hitBoundary = duck.update(deltaTime, height);
       if (hitBoundary) {
         gameOverCalledRef.current = true;
+        soundManager.play('hit');
         gameOver();
         return;
       }
@@ -326,6 +331,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Проверка границ уже выполнена в duck.update(), дублирование не требуется
       if (checkCollisions()) {
         gameOverCalledRef.current = true;
+        soundManager.play('hit');
         gameOver();
         return;
       }
