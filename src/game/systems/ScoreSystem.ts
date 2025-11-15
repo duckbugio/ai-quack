@@ -63,13 +63,13 @@ export function getCurrentSpacing(score: number, baseSpacing: number): number {
  * Оптимизированная версия - проверяет только препятствия в зоне видимости
  * @param duck - Экземпляр утки
  * @param obstacles - Массив препятствий
- * @param canvasWidth - Ширина canvas для оптимизации
+ * @param canvasWidth - Ширина canvas для оптимизации (обязательный параметр)
  * @returns Количество новых пройденных препятствий
  */
 export function checkAllObstaclesPassed(
   duck: Duck,
   obstacles: Obstacle[],
-  canvasWidth: number = 800
+  canvasWidth: number
 ): number {
   // Защита от edge cases
   if (!duck || !obstacles || obstacles.length === 0) {

@@ -41,7 +41,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       // localStorage может быть недоступен (например, в приватном режиме)
-      console.warn('Не удалось загрузить лучший результат из localStorage:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось загрузить лучший результат из localStorage:', error);
+      }
     }
     return 0;
   });
@@ -53,7 +55,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         return saved === 'true';
       }
     } catch (error) {
-      console.warn('Не удалось загрузить настройку звуков из localStorage:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось загрузить настройку звуков из localStorage:', error);
+      }
     }
     return true; // По умолчанию звуки включены
   });
@@ -83,7 +87,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('duck-game-highscore', newHighScore.toString());
       } catch (error) {
         // localStorage может быть недоступен (например, переполнение или приватный режим)
-        console.warn('Не удалось сохранить лучший результат в localStorage:', error);
+        if (import.meta.env.DEV) {
+          console.warn('Не удалось сохранить лучший результат в localStorage:', error);
+        }
       }
     }
   };
@@ -101,7 +107,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     try {
       localStorage.setItem('duck-game-sound-enabled', enabled.toString());
     } catch (error) {
-      console.warn('Не удалось сохранить настройку звуков в localStorage:', error);
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось сохранить настройку звуков в localStorage:', error);
+      }
     }
   };
 

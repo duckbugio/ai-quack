@@ -19,7 +19,9 @@ export class SoundManager {
     
     // Обработка ошибок загрузки
     audio.addEventListener('error', () => {
-      console.warn(`Не удалось загрузить звук: ${name} (${path})`);
+      if (import.meta.env.DEV) {
+        console.warn(`Не удалось загрузить звук: ${name} (${path})`);
+      }
     });
     
     this.sounds.set(name, audio);
