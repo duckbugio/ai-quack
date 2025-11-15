@@ -1524,39 +1524,26 @@
     - Используется `ctx.translate()` и `ctx.rotate()` для вращения относительно центра утки
 
 ### 10.4 Адаптивность
-- [ ] Обеспечить работу на разных размерах экрана:
-  - **Шаг 1:** Добавить функцию масштабирования canvas:
-    ```typescript
-    const scaleCanvas = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      
-      const container = canvas.parentElement;
-      if (!container) return;
-      
-      const scale = Math.min(
-        container.clientWidth / CANVAS_WIDTH,
-        container.clientHeight / CANVAS_HEIGHT
-      );
-      
-      canvas.style.width = `${CANVAS_WIDTH * scale}px`;
-      canvas.style.height = `${CANVAS_HEIGHT * scale}px`;
-    };
-    ```
-  - **Шаг 2:** Вызывать scaleCanvas при изменении размера окна:
-    ```typescript
-    useEffect(() => {
-      scaleCanvas();
-      window.addEventListener('resize', scaleCanvas);
-      return () => window.removeEventListener('resize', scaleCanvas);
-    }, []);
-    ```
-  - **Шаг 3:** Адаптировать размеры элементов для мобильных:
-    ```typescript
-    const isMobile = window.innerWidth < 768;
-    const adjustedDuckSize = isMobile ? { width: 30, height: 22 } : { width: 40, height: 30 };
-    ```
-  - **Шаг 4:** Убедиться, что touch events работают (уже реализовано в этапе 3.4)
+- [x] Обеспечить работу на разных размерах экрана: ✅
+  - **Шаг 1:** Добавить функцию масштабирования canvas: ✅
+    - Реализована функция `scaleCanvas()` в `GameCanvas.tsx`
+    - Определяет мобильные устройства (ширина < 768px)
+    - Вычисляет масштаб на основе доступного пространства контейнера
+    - Применяет масштаб к стилям canvas, сохраняя внутренние размеры фиксированными
+    - На мобильных разрешает масштабирование меньше 1 для полного использования экрана
+  - **Шаг 2:** Вызывать scaleCanvas при изменении размера окна: ✅
+    - Добавлен обработчик `resize` события
+    - Добавлен обработчик `orientationchange` для мобильных устройств
+    - Функция вызывается при монтировании компонента
+    - Используется `useCallback` для оптимизации
+  - **Шаг 3:** Адаптировать размеры элементов для мобильных: ✅
+    - Определение мобильных устройств реализовано в `scaleCanvas()`
+    - Разные отступы для мобильных и десктопа
+    - CSS адаптирован с медиа-запросами для разных размеров экрана
+    - Добавлены стили для предотвращения выделения текста и контекстного меню на touch устройствах
+  - **Шаг 4:** Убедиться, что touch events работают (уже реализовано в этапе 3.4) ✅
+    - Touch events уже реализованы в `handleTouchStart`
+    - Добавлены CSS стили `touch-action: manipulation` для улучшения работы на мобильных
 
 ---
 

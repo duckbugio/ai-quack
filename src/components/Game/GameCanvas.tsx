@@ -1214,19 +1214,72 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     }
   }, [gameState]);
   
+  // Функция масштабирования canvas для адаптивности
+  const scaleCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const container = canvas.parentElement;
+    if (!container) return;
+    
+    // Определяем, является ли устройство мобильным
+    const isMobile = window.innerWidth < 768;
+    
+    // Вычисляем масштаб на основе доступного пространства контейнера
+    const containerWidth = container.clientWidth;
+    // Для мобильных устройств используем всю высоту экрана с небольшим отступом
+    // Для десктопа учитываем отступы
+    const containerHeight = isMobile 
+      ? window.innerHeight - 20 // Минимальный отступ для мобильных
+      : window.innerHeight - 100; // Больше отступов для десктопа
+    
+    const scaleX = containerWidth / width;
+    const scaleY = containerHeight / height;
+    
+    // Используем минимальный масштаб для сохранения пропорций
+    // На мобильных разрешаем масштабирование меньше 1, если необходимо
+    const scale = Math.min(scaleX, scaleY, isMobile ? Infinity : 1);
+    
+    // Применяем масштаб к стилям canvas (размер отображения)
+    canvas.style.width = `${width * scale}px`;
+    canvas.style.height = `${height * scale}px`;
+    
+    // Внутренние размеры canvas остаются фиксированными (width x height)
+    // Это обеспечивает правильную отрисовку независимо от размера экрана
+  }, [width, height]);
+  
   // Обработка изменения размера окна
   useEffect(() => {
+    // Масштабируем при монтировании
+    scaleCanvas();
+    
+    // Debounce для resize события для оптимизации производительности
+    let resizeTimeoutId: number | undefined;
     const handleResize = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      
-      // Можно добавить логику масштабирования при необходимости
-      // Пока оставляем фиксированные размеры
+      if (resizeTimeoutId) {
+        clearTimeout(resizeTimeoutId);
+      }
+      resizeTimeoutId = window.setTimeout(() => {
+        scaleCanvas();
+      }, 150); // Задержка 150ms для оптимизации
     };
     
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    // Также обрабатываем изменение ориентации на мобильных устройствах
+    const handleOrientationChange = () => {
+      // Небольшая задержка для корректного определения новых размеров
+      setTimeout(scaleCanvas, 100);
+    };
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    return () => {
+      if (resizeTimeoutId) {
+        clearTimeout(resizeTimeoutId);
+      }
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, [scaleCanvas]);
   
   return (
     <canvas 
