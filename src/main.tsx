@@ -6,9 +6,23 @@ import { GameProvider } from './contexts/GameContext'
 import { soundManager } from './game/utils/SoundManager'
 
 // Загрузка звуков при инициализации приложения
-soundManager.loadSound('jump', '/sounds/jump.mp3');
-soundManager.loadSound('hit', '/sounds/hit.mp3');
-soundManager.loadSound('score', '/sounds/score.mp3');
+// Используем import.meta.env.BASE_URL для поддержки деплоя в подпапки (например, GitHub Pages)
+// BASE_URL всегда заканчивается на '/', поэтому просто конкатенируем пути
+const getSoundPath = (filename: string): string => {
+  return `${import.meta.env.BASE_URL}sounds/${filename}`;
+};
+
+// Конфигурация звуков для загрузки
+const soundsToLoad: Array<{ name: string; filename: string }> = [
+  { name: 'jump', filename: 'jump.mp3' },
+  { name: 'hit', filename: 'hit.mp3' },
+  { name: 'score', filename: 'score.mp3' },
+];
+
+// Загружаем все звуки
+soundsToLoad.forEach(({ name, filename }) => {
+  soundManager.loadSound(name, getSoundPath(filename));
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
