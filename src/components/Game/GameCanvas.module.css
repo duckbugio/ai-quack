@@ -9,8 +9,6 @@
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
-  /* Для плавного масштабирования на мобильных */
-  image-rendering: auto;
   /* Предотвращаем выделение текста на touch устройствах */
   -webkit-touch-callout: none;
   -webkit-user-select: none;

@@ -1233,12 +1233,19 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ? window.innerHeight - 20 // Минимальный отступ для мобильных
       : window.innerHeight - 100; // Больше отступов для десктопа
     
+    // Защита от деления на ноль и некорректных значений
+    if (width <= 0 || height <= 0 || containerWidth <= 0 || containerHeight <= 0) {
+      return;
+    }
+    
     const scaleX = containerWidth / width;
     const scaleY = containerHeight / height;
     
     // Используем минимальный масштаб для сохранения пропорций
     // На мобильных разрешаем масштабирование меньше 1, если необходимо
-    const scale = Math.min(scaleX, scaleY, isMobile ? Infinity : 1);
+    // Math.max(0.01, ...) предотвращает отрицательные или нулевые значения scale,
+    // что может произойти при очень маленькой высоте окна или нулевой ширине/высоте
+    const scale = Math.max(0.01, Math.min(scaleX, scaleY, isMobile ? Infinity : 1));
     
     // Применяем масштаб к стилям canvas (размер отображения)
     canvas.style.width = `${width * scale}px`;
