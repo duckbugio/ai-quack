@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import styles from './GameOverMenu.module.css';
 
@@ -9,7 +9,15 @@ import styles from './GameOverMenu.module.css';
 export const GameOverMenu: React.FC = () => {
   const { score, highScore, startGame, resetGame } = useGame();
   const isNewRecord = score === highScore && score > 0;
+  const [fadeIn, setFadeIn] = useState(false);
   
+  // Fade-in эффект при появлении меню
+  useEffect(() => {
+    setFadeIn(false);
+    const timer = setTimeout(() => setFadeIn(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Обработка клавиши Enter для начала новой игры
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -25,8 +33,8 @@ export const GameOverMenu: React.FC = () => {
   
   return (
     <>
-      <div className={styles.overlay} />
-      <div className={styles.menu} role="dialog" aria-label="Экран окончания игры">
+      <div className={`${styles.overlay} ${fadeIn ? styles.fadeIn : ''}`} />
+      <div className={`${styles.menu} ${fadeIn ? styles.fadeIn : ''}`} role="dialog" aria-label="Экран окончания игры">
         <h2 className={styles.title}>Игра окончена!</h2>
         <div className={styles.score} aria-live="polite">
           Ваш счет: <span className={styles.scoreValue}>{score}</span>

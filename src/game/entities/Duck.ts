@@ -23,6 +23,9 @@ export class Duck {
   private cachedBounds: Bounds | null = null;
   private lastPositionX: number = DUCK_START_X;
   private lastPositionY: number = DUCK_START_Y;
+  // Для плавной интерполяции позиции
+  private renderX: number = DUCK_START_X;
+  private renderY: number = DUCK_START_Y;
 
   constructor() {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
@@ -50,6 +53,11 @@ export class Duck {
 
     // Обновление позиции
     this.position.y += this.velocity.vy * (deltaTime / 16);
+    
+    // Плавная интерполяция позиции для отрисовки (lerp)
+    const lerpFactor = 0.2; // Коэффициент интерполяции (0-1, чем больше, тем быстрее)
+    this.renderX = this.renderX + (this.position.x - this.renderX) * lerpFactor;
+    this.renderY = this.renderY + (this.position.y - this.renderY) * lerpFactor;
 
     // Проверка верхней границы
     if (this.position.y < 0) {
@@ -98,12 +106,29 @@ export class Duck {
    * @param ctx - Контекст canvas для отрисовки
    */
   draw(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    
+    // Вычисление угла вращения в зависимости от скорости
+    // Утка наклоняется вниз при падении и вверх при подъеме
+    const maxRotation = 30; // Максимальный угол в градусах
+    const rotation = Math.min(Math.max(this.velocity.vy * 3, -maxRotation), maxRotation);
+    const rotationRad = (rotation * Math.PI) / 180;
+    
+    // Центр утки для вращения
+    const centerX = this.renderX + this.width / 2;
+    const centerY = this.renderY + this.height / 2;
+    
+    // Применение трансформации (вращение вокруг центра)
+    ctx.translate(centerX, centerY);
+    ctx.rotate(rotationRad);
+    ctx.translate(-centerX, -centerY);
+    
     // Тело утки (эллипс)
     ctx.fillStyle = '#FFA500';
     ctx.beginPath();
     ctx.ellipse(
-      this.position.x + this.width / 2,
-      this.position.y + this.height / 2,
+      centerX,
+      centerY,
       this.width / 2,
       this.height / 2,
       0,
@@ -115,8 +140,8 @@ export class Duck {
     // Клюв
     ctx.fillStyle = '#FF8C00';
     ctx.fillRect(
-      this.position.x + this.width - 10,
-      this.position.y + 10,
+      this.renderX + this.width - 10,
+      this.renderY + 10,
       8,
       6
     );
@@ -125,15 +150,17 @@ export class Duck {
     const wingOffset = this.wingState === 'up' ? -5 : 5;
     ctx.fillStyle = '#FF8C00';
     ctx.fillRect(
-      this.position.x + 5,
-      this.position.y + 10 + wingOffset,
+      this.renderX + 5,
+      this.renderY + 10 + wingOffset,
       15,
       8
     );
 
     // Глаз
     ctx.fillStyle = '#000';
-    ctx.fillRect(this.position.x + 25, this.position.y + 8, 5, 5);
+    ctx.fillRect(this.renderX + 25, this.renderY + 8, 5, 5);
+    
+    ctx.restore();
   }
 
   /**
@@ -169,5 +196,7 @@ export class Duck {
     this.cachedBounds = null;
     this.lastPositionX = DUCK_START_X;
     this.lastPositionY = DUCK_START_Y;
+    this.renderX = DUCK_START_X;
+    this.renderY = DUCK_START_Y;
   }
 }

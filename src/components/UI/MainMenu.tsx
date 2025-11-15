@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { soundManager } from '../../game/utils/SoundManager';
 import styles from './MainMenu.module.css';
@@ -9,7 +9,15 @@ import styles from './MainMenu.module.css';
  */
 export const MainMenu: React.FC = () => {
   const { startGame, highScore, soundEnabled, setSoundEnabled } = useGame();
+  const [fadeIn, setFadeIn] = useState(false);
   
+  // Fade-in эффект при появлении меню
+  useEffect(() => {
+    setFadeIn(false);
+    const timer = setTimeout(() => setFadeIn(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Обработка клавиши Enter для начала игры
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -38,7 +46,7 @@ export const MainMenu: React.FC = () => {
   };
   
   return (
-    <div className={styles.menu} role="dialog" aria-label="Главное меню игры">
+    <div className={`${styles.menu} ${fadeIn ? styles.fadeIn : ''}`} role="dialog" aria-label="Главное меню игры">
       <h1 className={styles.title}>🦆 Утка</h1>
       {highScore > 0 && (
         <div className={styles.highScore} aria-live="polite">
