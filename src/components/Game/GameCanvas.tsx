@@ -45,6 +45,33 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Состояние для движения земли
   const groundOffsetRef = useRef<number>(0);
+  
+  // Состояние для движения деревьев (параллакс-эффект)
+  const treesOffsetRef = useRef<number>(0);
+  
+  // Состояние для декоративных элементов
+  // Птицы: массив объектов с позицией и скоростью
+  interface Bird {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    wingState: 'up' | 'down';
+    wingTimer: number;
+  }
+  
+  // Цветы на земле
+  interface Flower {
+    x: number;
+    y: number;
+    type: 'daisy' | 'tulip' | 'sunflower';
+    size: number;
+  }
+  
+  const birdsRef = useRef<Bird[]>([]);
+  const treesRef = useRef<Array<{ x: number; height: number; type: 'small' | 'medium' | 'large' }>>([]);
+  const flowersRef = useRef<Flower[]>([]);
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
@@ -82,6 +109,46 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Подключение обработки клавиатуры
   useKeyboard(handleJump);
+  
+  // Инициализация декоративных элементов
+  useEffect(() => {
+    // Инициализация деревьев на заднем плане
+    if (treesRef.current.length === 0) {
+      treesRef.current = [
+        { x: 150, height: 120, type: 'medium' },
+        { x: 400, height: 100, type: 'small' },
+        { x: 650, height: 140, type: 'large' },
+        { x: 850, height: 110, type: 'medium' },
+        { x: 1100, height: 130, type: 'large' },
+        { x: 1350, height: 115, type: 'medium' },
+        { x: 1600, height: 125, type: 'small' },
+      ];
+    }
+    
+    // Инициализация птиц
+    if (birdsRef.current.length === 0) {
+      birdsRef.current = [
+        { x: -50, y: 150, vx: 1.5, vy: Math.sin(0) * 0.3, size: 12, wingState: 'up', wingTimer: 0 },
+        { x: -100, y: 200, vx: 1.2, vy: Math.sin(0.5) * 0.3, size: 10, wingState: 'down', wingTimer: 50 },
+        { x: -150, y: 100, vx: 1.8, vy: Math.sin(1) * 0.3, size: 14, wingState: 'up', wingTimer: 100 },
+      ];
+    }
+    
+    // Инициализация цветов на земле
+    if (flowersRef.current.length === 0) {
+      const groundY = height - 50;
+      flowersRef.current = [
+        { x: 200, y: groundY - 15, type: 'daisy', size: 8 },
+        { x: 350, y: groundY - 12, type: 'tulip', size: 10 },
+        { x: 500, y: groundY - 18, type: 'sunflower', size: 12 },
+        { x: 750, y: groundY - 14, type: 'daisy', size: 9 },
+        { x: 950, y: groundY - 16, type: 'tulip', size: 11 },
+        { x: 1200, y: groundY - 13, type: 'sunflower', size: 10 },
+        { x: 1400, y: groundY - 15, type: 'daisy', size: 8 },
+        { x: 1650, y: groundY - 17, type: 'tulip', size: 9 },
+      ];
+    }
+  }, [height]);
   
   // Инициализация canvas
   useEffect(() => {
@@ -132,6 +199,71 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     },
     [width]
   );
+  
+  // Функция обновления движения деревьев (параллакс - медленнее препятствий)
+  const updateTrees = useCallback(
+    (deltaTime: number) => {
+      // Деревья двигаются медленнее для эффекта глубины (параллакс)
+      const parallaxSpeed = GROUND_SPEED * 0.3; // 30% от скорости земли
+      treesOffsetRef.current += parallaxSpeed * (deltaTime / 16);
+      
+      // Обновляем позиции деревьев для бесшовной прокрутки
+      const trees = treesRef.current;
+      trees.forEach((tree) => {
+        // Если дерево ушло за левую границу, перемещаем его вправо
+        const treeScreenX = tree.x - treesOffsetRef.current;
+        if (treeScreenX + 100 < -width) {
+          // Находим самое правое дерево
+          const rightmostTree = trees.reduce((max, t) => {
+            const screenX = t.x - treesOffsetRef.current;
+            return screenX > max ? screenX : max;
+          }, -Infinity);
+          tree.x = rightmostTree + 250 + Math.random() * 100;
+        }
+      });
+      
+      // Сбрасываем offset для бесшовной прокрутки (если нужно)
+      if (treesOffsetRef.current > width * 2) {
+        treesOffsetRef.current = 0;
+      }
+    },
+    [width]
+  );
+  
+  // Функция обновления птиц
+  const updateBirds = useCallback(
+    (deltaTime: number) => {
+      const birds = birdsRef.current;
+      const groundY = height - 50;
+      
+      birds.forEach((bird) => {
+        // Обновление позиции
+        bird.x += bird.vx * (deltaTime / 16);
+        bird.y += bird.vy * (deltaTime / 16);
+        
+        // Обновление анимации крыльев
+        bird.wingTimer += deltaTime;
+        if (bird.wingTimer > 150) {
+          bird.wingState = bird.wingState === 'up' ? 'down' : 'up';
+          bird.wingTimer = 0;
+        }
+        
+        // Плавное движение вверх-вниз (синусоидальное)
+        bird.vy = Math.sin(bird.x * 0.01) * 0.3;
+        
+        // Если птица улетела за экран, переместить её в начало
+        if (bird.x > width + 50) {
+          bird.x = -50;
+          bird.y = 80 + Math.random() * (groundY - 200);
+        }
+        
+        // Ограничение по вертикали (не слишком высоко и не слишком низко)
+        if (bird.y < 50) bird.y = 50;
+        if (bird.y > groundY - 50) bird.y = groundY - 50;
+      });
+    },
+    [width, height]
+  );
 
   // Игровой цикл: обновление состояния
   const update = useCallback(
@@ -141,6 +273,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       
       // Обновление земли (работает всегда для плавной анимации)
       updateGround(deltaTime);
+      
+      // Обновление деревьев (параллакс-эффект)
+      updateTrees(deltaTime);
+      
+      // Обновление птиц (работает всегда для плавной анимации)
+      updateBirds(deltaTime);
       
       if (gameState !== GameState.PLAYING) {
         // Сбрасываем флаг при выходе из состояния PLAYING
@@ -175,7 +313,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     },
-    [gameState, height, checkCollisions, gameOver, updateClouds, updateGround]
+    [gameState, height, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds]
   );
 
   // Анимация счета при изменении
@@ -435,6 +573,316 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     [width]
   );
 
+  // Функция отрисовки деревьев на заднем плане
+  const drawTrees = useCallback(
+    (ctx: CanvasRenderingContext2D) => {
+      const trees = treesRef.current;
+      const groundY = height - 50;
+      const offset = treesOffsetRef.current;
+      
+      // Фильтруем только видимые деревья для оптимизации
+      const visibleTrees = trees.filter((tree) => {
+        const treeScreenX = tree.x - offset;
+        return treeScreenX + 100 > -50 && treeScreenX < width + 50;
+      });
+      
+      visibleTrees.forEach((tree) => {
+        const treeX = tree.x - offset; // Применяем параллакс-смещение
+        const treeBaseY = groundY;
+        const treeHeight = tree.height;
+        const treeTopY = treeBaseY - treeHeight;
+        
+        // Определение размеров в зависимости от типа дерева
+        let trunkWidth: number;
+        let crownSize: number;
+        
+        switch (tree.type) {
+          case 'small':
+            trunkWidth = 8;
+            crownSize = 25;
+            break;
+          case 'medium':
+            trunkWidth = 12;
+            crownSize = 35;
+            break;
+          case 'large':
+            trunkWidth = 16;
+            crownSize = 45;
+            break;
+        }
+        
+        ctx.save();
+        
+        // Тень дерева
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.beginPath();
+        ctx.ellipse(
+          treeX + trunkWidth / 2,
+          treeBaseY + 5,
+          crownSize * 0.6,
+          8,
+          0,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Ствол дерева
+        const trunkGradient = ctx.createLinearGradient(
+          treeX,
+          treeTopY + crownSize,
+          treeX + trunkWidth,
+          treeBaseY
+        );
+        trunkGradient.addColorStop(0, '#8B4513'); // Коричневый
+        trunkGradient.addColorStop(1, '#654321'); // Темно-коричневый
+        ctx.fillStyle = trunkGradient;
+        ctx.fillRect(
+          treeX,
+          treeTopY + crownSize,
+          trunkWidth,
+          treeHeight - crownSize
+        );
+        
+        // Крона дерева (несколько слоев для объема)
+        const crownY = treeTopY + crownSize * 0.3;
+        
+        // Внешний слой (темнее)
+        const crownGradient1 = ctx.createRadialGradient(
+          treeX + trunkWidth / 2,
+          crownY,
+          0,
+          treeX + trunkWidth / 2,
+          crownY,
+          crownSize
+        );
+        crownGradient1.addColorStop(0, '#228B22'); // Темно-зеленый
+        crownGradient1.addColorStop(0.7, '#32CD32'); // Зеленый
+        crownGradient1.addColorStop(1, '#228B22'); // Темно-зеленый
+        ctx.fillStyle = crownGradient1;
+        ctx.beginPath();
+        ctx.arc(
+          treeX + trunkWidth / 2,
+          crownY,
+          crownSize,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Внутренний слой (светлее)
+        const crownGradient2 = ctx.createRadialGradient(
+          treeX + trunkWidth / 2,
+          crownY - crownSize * 0.2,
+          0,
+          treeX + trunkWidth / 2,
+          crownY - crownSize * 0.2,
+          crownSize * 0.7
+        );
+        crownGradient2.addColorStop(0, '#90EE90'); // Светло-зеленый
+        crownGradient2.addColorStop(1, '#32CD32'); // Зеленый
+        ctx.fillStyle = crownGradient2;
+        ctx.beginPath();
+        ctx.arc(
+          treeX + trunkWidth / 2,
+          crownY - crownSize * 0.2,
+          crownSize * 0.7,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        ctx.restore();
+      });
+    },
+    [width, height]
+  );
+  
+  // Функция отрисовки цветов на земле
+  const drawFlowers = useCallback(
+    (ctx: CanvasRenderingContext2D) => {
+      const flowers = flowersRef.current;
+      const groundY = height - 50;
+      const offset = groundOffsetRef.current;
+      
+      // Фильтруем только видимые цветы для оптимизации
+      const visibleFlowers = flowers.filter((flower) => {
+        const flowerScreenX = (flower.x - offset) % (width + 100);
+        return flowerScreenX > -20 && flowerScreenX < width + 20;
+      });
+      
+      visibleFlowers.forEach((flower) => {
+        const flowerX = ((flower.x - offset) % (width + 100) + width + 100) % (width + 100);
+        const flowerY = flower.y;
+        const size = flower.size;
+        
+        ctx.save();
+        
+        switch (flower.type) {
+          case 'daisy': {
+            // Ромашка - белые лепестки с желтой серединкой
+            // Лепестки
+            ctx.fillStyle = '#FFFFFF';
+            for (let i = 0; i < 8; i++) {
+              const angle = (i / 8) * Math.PI * 2;
+              const petalX = flowerX + Math.cos(angle) * size * 0.6;
+              const petalY = flowerY + Math.sin(angle) * size * 0.6;
+              ctx.beginPath();
+              ctx.ellipse(petalX, petalY, size * 0.3, size * 0.5, angle, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            // Серединка
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(flowerX, flowerY, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+          case 'tulip': {
+            // Тюльпан - красный с листьями
+            // Листья
+            ctx.fillStyle = '#228B22';
+            ctx.beginPath();
+            ctx.ellipse(flowerX - size * 0.4, flowerY + size * 0.3, size * 0.2, size * 0.6, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(flowerX + size * 0.4, flowerY + size * 0.3, size * 0.2, size * 0.6, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            // Цветок
+            const tulipGradient = ctx.createLinearGradient(flowerX, flowerY - size, flowerX, flowerY);
+            tulipGradient.addColorStop(0, '#FF1493');
+            tulipGradient.addColorStop(1, '#DC143C');
+            ctx.fillStyle = tulipGradient;
+            ctx.beginPath();
+            ctx.ellipse(flowerX, flowerY - size * 0.2, size * 0.4, size * 0.8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          }
+          case 'sunflower': {
+            // Подсолнух - желтый с коричневой серединкой
+            // Лепестки
+            ctx.fillStyle = '#FFD700';
+            for (let i = 0; i < 12; i++) {
+              const angle = (i / 12) * Math.PI * 2;
+              const petalX = flowerX + Math.cos(angle) * size * 0.7;
+              const petalY = flowerY + Math.sin(angle) * size * 0.7;
+              ctx.beginPath();
+              ctx.ellipse(petalX, petalY, size * 0.25, size * 0.6, angle, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            // Серединка
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.arc(flowerX, flowerY, size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+            // Текстура на серединке
+            ctx.fillStyle = '#654321';
+            for (let i = 0; i < 6; i++) {
+              const angle = (i / 6) * Math.PI * 2;
+              const dotX = flowerX + Math.cos(angle) * size * 0.2;
+              const dotY = flowerY + Math.sin(angle) * size * 0.2;
+              ctx.beginPath();
+              ctx.arc(dotX, dotY, size * 0.08, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            break;
+          }
+        }
+        
+        ctx.restore();
+      });
+    },
+    [width, height]
+  );
+  
+  // Функция отрисовки птиц
+  const drawBirds = useCallback(
+    (ctx: CanvasRenderingContext2D) => {
+      const birds = birdsRef.current;
+      
+      birds.forEach((bird) => {
+        ctx.save();
+        
+        // Позиция птицы
+        const birdX = bird.x;
+        const birdY = bird.y;
+        const size = bird.size;
+        
+        // Определение угла наклона в зависимости от направления движения
+        const angle = Math.atan2(bird.vy, bird.vx);
+        
+        // Смещение крыльев для анимации
+        const wingOffset = bird.wingState === 'up' ? -size * 0.3 : size * 0.3;
+        
+        ctx.translate(birdX, birdY);
+        ctx.rotate(angle);
+        
+        // Тело птицы (эллипс)
+        ctx.fillStyle = '#4A4A4A'; // Темно-серый
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.6, size * 0.4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Крылья
+        ctx.fillStyle = '#6B6B6B'; // Серый
+        ctx.beginPath();
+        // Верхнее крыло
+        ctx.ellipse(
+          -size * 0.2,
+          wingOffset,
+          size * 0.5,
+          size * 0.3,
+          -0.3,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Нижнее крыло
+        ctx.beginPath();
+        ctx.ellipse(
+          -size * 0.2,
+          -wingOffset,
+          size * 0.5,
+          size * 0.3,
+          0.3,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Голова птицы
+        ctx.fillStyle = '#4A4A4A';
+        ctx.beginPath();
+        ctx.arc(size * 0.4, 0, size * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Глаз
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(size * 0.45, -size * 0.1, size * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(size * 0.47, -size * 0.1, size * 0.05, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Клюв
+        ctx.fillStyle = '#FF8C00'; // Оранжевый
+        ctx.beginPath();
+        ctx.moveTo(size * 0.55, 0);
+        ctx.lineTo(size * 0.7, -size * 0.1);
+        ctx.lineTo(size * 0.7, size * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+      });
+    },
+    []
+  );
+  
   // Функция отрисовки земли с улучшенной визуализацией
   const drawGround = useCallback(
     (ctx: CanvasRenderingContext2D) => {
@@ -495,8 +943,17 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     // Отрисовка облаков
     drawClouds(ctx);
     
+    // Отрисовка деревьев на заднем плане (перед препятствиями)
+    drawTrees(ctx);
+    
     // Отрисовка земли
     drawGround(ctx);
+    
+    // Отрисовка цветов на земле
+    drawFlowers(ctx);
+    
+    // Отрисовка птиц (на переднем плане, но за препятствиями)
+    drawBirds(ctx);
 
     // Отрисовка игровых объектов только во время игры
     if (gameState === GameState.PLAYING) {
@@ -508,7 +965,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Отрисовка препятствий
       obstacleManager.draw(ctx);
 
-      // Отрисовка утки
+      // Отрисовка утки (поверх всего)
       duck.draw(ctx);
 
       // Отрисовка счета
@@ -590,7 +1047,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         }
       }
     }
-  }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround]);
+  }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround, drawTrees, drawFlowers, drawBirds]);
 
   // Подключение игрового цикла
   useGameLoop({
@@ -614,6 +1071,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         
         updateClouds(deltaTime);
         updateGround(deltaTime);
+        updateTrees(deltaTime);
+        updateBirds(deltaTime);
         render();
         
         if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
@@ -629,7 +1088,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         }
       };
     }
-  }, [gameState, render, updateClouds, updateGround]);
+  }, [gameState, render, updateClouds, updateGround, updateTrees, updateBirds]);
 
   // Сброс игровых объектов при возврате в меню
   useEffect(() => {
