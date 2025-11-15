@@ -1410,12 +1410,13 @@
     }
     ```
     - Реализовано в `src/components/Game/GameCanvas.tsx` в функции `checkCollisions`
-- [ ] Добавить настройку включения/выключения звуков в меню
-  - **Шаг 1:** Добавить состояние в GameContext:
+- [x] Добавить настройку включения/выключения звуков в меню ✅
+  - **Шаг 1:** Добавить состояние в GameContext: ✅
     ```typescript
     const [soundEnabled, setSoundEnabled] = useState(true);
     ```
-  - **Шаг 2:** Добавить переключатель в MainMenu:
+    - Реализовано в `src/contexts/GameContext.tsx` с сохранением в localStorage
+  - **Шаг 2:** Добавить переключатель в MainMenu: ✅
     ```typescript
     <label>
       <input 
@@ -1429,6 +1430,7 @@
       Звуки
     </label>
     ```
+    - Реализовано в `src/components/UI/MainMenu.tsx` с красивым дизайном и иконками
 
 ---
 
