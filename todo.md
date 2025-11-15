@@ -1227,7 +1227,7 @@
   - **Шаг 5:** Отображать MainMenu когда gameState === MENU
 
 ### 8.2 Экран паузы
-- [ ] Создать компонент `src/components/UI/PauseMenu.tsx`
+- [x] Создать компонент `src/components/UI/PauseMenu.tsx`
   - **Шаг 1:** Создать файл `src/components/UI/PauseMenu.tsx`
   - **Шаг 2:** Реализовать компонент:
     ```typescript

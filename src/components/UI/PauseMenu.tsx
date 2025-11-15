@@ -1,0 +1,56 @@
+import { useEffect } from 'react';
+import { useGame } from '../../contexts/GameContext';
+import styles from './PauseMenu.module.css';
+
+/**
+ * Компонент меню паузы
+ * Отображается когда gameState === PAUSED
+ */
+export const PauseMenu: React.FC = () => {
+  const { resumeGame, resetGame, score } = useGame();
+  
+  // Обработка клавиши Escape для возобновления игры
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        resumeGame();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [resumeGame]);
+  
+  return (
+    <>
+      <div className={styles.overlay} />
+      <div className={styles.menu} role="dialog" aria-label="Меню паузы">
+        <h2 className={styles.title}>Пауза</h2>
+        {score > 0 && (
+          <div className={styles.score} aria-live="polite">
+            Текущий счет: <span className={styles.scoreValue}>{score}</span>
+          </div>
+        )}
+        <button 
+          className={styles.button}
+          onClick={resumeGame}
+          aria-label="Продолжить игру"
+          autoFocus
+        >
+          Продолжить
+        </button>
+        <button 
+          className={styles.button}
+          onClick={resetGame}
+          aria-label="Вернуться в главное меню"
+        >
+          В главное меню
+        </button>
+        <div className={styles.instructions}>
+          <p>Escape - продолжить игру</p>
+        </div>
+      </div>
+    </>
+  );
+};
