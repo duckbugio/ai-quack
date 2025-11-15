@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { GameState } from '../types/game.types';
+import { soundManager } from '../game/utils/SoundManager';
 
 /**
  * Интерфейс контекста игры
@@ -9,12 +10,14 @@ interface GameContextType {
   gameState: GameState;
   score: number;
   highScore: number;
+  soundEnabled: boolean;
   startGame: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
   gameOver: () => void;
   resetGame: () => void;
   incrementScore: () => void;
+  setSoundEnabled: (enabled: boolean) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -43,6 +46,23 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     return 0;
   });
   
+  const [soundEnabled, setSoundEnabledState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('duck-game-sound-enabled');
+      if (saved !== null) {
+        return saved === 'true';
+      }
+    } catch (error) {
+      console.warn('Не удалось загрузить настройку звуков из localStorage:', error);
+    }
+    return true; // По умолчанию звуки включены
+  });
+  
+  // Синхронизация состояния звуков с SoundManager при инициализации и изменении
+  useEffect(() => {
+    soundManager.setEnabled(soundEnabled);
+  }, [soundEnabled]);
+  
   const startGame = () => {
     setGameState(GameState.PLAYING);
     setScore(0);
@@ -56,6 +76,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     if (score > highScore) {
       const newHighScore = score;
       setHighScore(newHighScore);
+      // Проигрываем звук при установке нового рекорда
+      // Используем звук score, так как это достижение
+      soundManager.play('score');
       try {
         localStorage.setItem('duck-game-highscore', newHighScore.toString());
       } catch (error) {
@@ -71,6 +94,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const incrementScore = () => setScore((prev) => prev + 1);
+  
+  const setSoundEnabled = (enabled: boolean) => {
+    setSoundEnabledState(enabled);
+    soundManager.setEnabled(enabled);
+    try {
+      localStorage.setItem('duck-game-sound-enabled', enabled.toString());
+    } catch (error) {
+      console.warn('Не удалось сохранить настройку звуков в localStorage:', error);
+    }
+  };
 
   return (
     <GameContext.Provider
@@ -78,12 +111,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         gameState,
         score,
         highScore,
+        soundEnabled,
         startGame,
         pauseGame,
         resumeGame,
         gameOver,
         resetGame,
         incrementScore,
+        setSoundEnabled,
       }}
     >
       {children}

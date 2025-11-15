@@ -159,6 +159,52 @@
   outline: none;
 }
 
+.soundToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.soundToggle:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.soundToggle input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  accent-color: #FF8C00;
+  transition: transform 0.2s ease;
+}
+
+.soundToggle input[type="checkbox"]:hover {
+  transform: scale(1.1);
+}
+
+.soundToggleLabel {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.3s ease;
+}
+
+.soundToggle:hover .soundToggleLabel {
+  color: #FF8C00;
+}
+
 .instructions {
   margin-top: 8px;
   text-align: center;
@@ -223,6 +269,14 @@
     letter-spacing: 1px;
   }
 
+  .soundToggle {
+    padding: 10px 20px;
+  }
+
+  .soundToggleLabel {
+    font-size: 16px;
+  }
+
   .instructions {
     font-size: 14px;
     padding: 12px;
@@ -254,6 +308,14 @@
     padding: 14px 32px;
     font-size: 20px;
     min-width: 180px;
+  }
+
+  .soundToggle {
+    padding: 8px 16px;
+  }
+
+  .soundToggleLabel {
+    font-size: 14px;
   }
 
   .instructions {
