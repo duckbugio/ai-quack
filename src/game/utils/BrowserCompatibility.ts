@@ -183,8 +183,14 @@ export function checkCompatibility(): CompatibilityReport {
 
 /**
  * Выводит отчет о совместимости в консоль
+ * Выводится только в режиме разработки
  */
 export function logCompatibilityReport(): void {
+  // Выводим отчет только в режиме разработки
+  if (!import.meta.env.DEV) {
+    return;
+  }
+  
   const report = checkCompatibility();
   
   console.group('🔍 Отчет о совместимости браузера');

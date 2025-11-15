@@ -961,7 +961,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.restore();
       });
     },
-    []
+    [width]
   );
   
   // Функция отрисовки земли с улучшенной визуализацией
@@ -1154,9 +1154,15 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     gameStateRef.current = gameState;
   }, [gameState]);
 
+  // Ref для функции render, чтобы избежать пересоздания анимации
+  const renderRef = useRef(render);
+  useEffect(() => {
+    renderRef.current = render;
+  }, [render]);
+
   useEffect(() => {
     if (gameState === GameState.MENU || gameState === GameState.GAME_OVER || gameState === GameState.PAUSED) {
-      render();
+      renderRef.current();
       
       // Анимация облаков и земли в меню (но не во время паузы - игра должна быть заморожена)
       if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
@@ -1179,7 +1185,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           updateGround(deltaTime, 1);
           updateTrees(deltaTime);
           updateBirds(deltaTime);
-          render();
+          renderRef.current();
           
           // Продолжаем анимацию только если состояние не изменилось
           if (isRunning && (gameStateRef.current === GameState.MENU || gameStateRef.current === GameState.GAME_OVER)) {
@@ -1197,7 +1203,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         };
       }
     }
-  }, [gameState, render, updateClouds, updateGround, updateTrees, updateBirds]);
+  }, [gameState, updateClouds, updateGround, updateTrees, updateBirds]);
 
   // Сброс игровых объектов при возврате в меню
   useEffect(() => {
