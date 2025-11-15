@@ -2,6 +2,7 @@ import { GameProvider, useGame } from './contexts/GameContext';
 import { GameCanvas } from './components/Game/GameCanvas';
 import { MainMenu } from './components/UI/MainMenu';
 import { PauseMenu } from './components/UI/PauseMenu';
+import { GameOverMenu } from './components/UI/GameOverMenu';
 import { GameState } from './types/game.types';
 import './App.css';
 
@@ -17,6 +18,7 @@ const AppContent = () => {
       <GameCanvas />
       {gameState === GameState.MENU && <MainMenu />}
       {gameState === GameState.PAUSED && <PauseMenu />}
+      {gameState === GameState.GAME_OVER && <GameOverMenu />}
     </div>
   );
 };
