@@ -22,6 +22,7 @@ import {
   PIPE_SPACING,
 } from '../../game/utils/constants';
 import { soundManager } from '../../game/utils/SoundManager';
+import { performanceMonitor } from '../../game/utils/PerformanceMonitor';
 import styles from './GameCanvas.module.css';
 
 interface GameCanvasProps {
@@ -1013,6 +1014,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Обновляем мониторинг производительности (если включен)
+    if (performanceMonitor.isEnabled()) {
+      performanceMonitor.update();
+    }
 
     // Очистка canvas
     ctx.clearRect(0, 0, width, height);
