@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
+import { GameState } from '../../types/game.types';
 import styles from './PauseMenu.module.css';
 
 /**
@@ -7,8 +8,19 @@ import styles from './PauseMenu.module.css';
  * Отображается когда gameState === PAUSED
  */
 export const PauseMenu: React.FC = () => {
-  const { resumeGame, resetGame, score } = useGame();
+  const { resumeGame, resetGame, score, gameState } = useGame();
+  const [fadeIn, setFadeIn] = useState(false);
   
+  // Fade-in эффект при появлении меню паузы
+  useEffect(() => {
+    if (gameState === GameState.PAUSED) {
+      setFadeIn(false);
+      // Небольшая задержка для плавного появления
+      const timer = setTimeout(() => setFadeIn(true), 10);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState]);
+
   // Обработка клавиши Escape для возобновления игры
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -24,8 +36,12 @@ export const PauseMenu: React.FC = () => {
   
   return (
     <>
-      <div className={styles.overlay} />
-      <div className={styles.menu} role="dialog" aria-label="Меню паузы">
+      <div className={`${styles.overlay} ${fadeIn ? styles.fadeIn : ''}`} />
+      <div 
+        className={`${styles.menu} ${fadeIn ? styles.fadeIn : ''}`} 
+        role="dialog" 
+        aria-label="Меню паузы"
+      >
         <h2 className={styles.title}>Пауза</h2>
         {score > 0 && (
           <div className={styles.score} aria-live="polite">

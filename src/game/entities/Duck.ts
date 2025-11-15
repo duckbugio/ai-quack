@@ -98,12 +98,28 @@ export class Duck {
    * @param ctx - Контекст canvas для отрисовки
    */
   draw(ctx: CanvasRenderingContext2D): void {
-    // Тело утки (эллипс)
+    // Вычисляем угол вращения в зависимости от вертикальной скорости
+    // Ограничиваем угол от -30 до 30 градусов для плавности
+    const rotation = Math.min(Math.max(this.velocity.vy * 3, -30), 30);
+    const rotationRad = (rotation * Math.PI) / 180;
+
+    // Центр утки для вращения
+    const centerX = this.position.x + this.width / 2;
+    const centerY = this.position.y + this.height / 2;
+
+    // Сохраняем текущее состояние контекста
+    ctx.save();
+
+    // Перемещаем начало координат в центр утки и применяем вращение
+    ctx.translate(centerX, centerY);
+    ctx.rotate(rotationRad);
+
+    // Тело утки (эллипс) - теперь относительно центра
     ctx.fillStyle = '#FFA500';
     ctx.beginPath();
     ctx.ellipse(
-      this.position.x + this.width / 2,
-      this.position.y + this.height / 2,
+      0,
+      0,
       this.width / 2,
       this.height / 2,
       0,
@@ -112,28 +128,36 @@ export class Duck {
     );
     ctx.fill();
 
-    // Клюв
+    // Клюв (относительно центра)
     ctx.fillStyle = '#FF8C00';
     ctx.fillRect(
-      this.position.x + this.width - 10,
-      this.position.y + 10,
+      this.width / 2 - 10,
+      -3,
       8,
       6
     );
 
-    // Крылья (с анимацией)
+    // Крылья (с анимацией) - относительно центра
     const wingOffset = this.wingState === 'up' ? -5 : 5;
     ctx.fillStyle = '#FF8C00';
     ctx.fillRect(
-      this.position.x + 5,
-      this.position.y + 10 + wingOffset,
+      -this.width / 2 + 5,
+      -5 + wingOffset,
       15,
       8
     );
 
-    // Глаз
+    // Глаз (относительно центра)
     ctx.fillStyle = '#000';
-    ctx.fillRect(this.position.x + 25, this.position.y + 8, 5, 5);
+    ctx.fillRect(
+      this.width / 2 - 15,
+      -7,
+      5,
+      5
+    );
+
+    // Восстанавливаем состояние контекста
+    ctx.restore();
   }
 
   /**
