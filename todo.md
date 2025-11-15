@@ -1273,9 +1273,9 @@
   - **Шаг 4:** Добавить обработку клавиши Escape для паузы
 
 ### 8.3 Экран окончания игры
-- [ ] Создать компонент `src/components/UI/GameOverMenu.tsx`
-  - **Шаг 1:** Создать файл `src/components/UI/GameOverMenu.tsx`
-  - **Шаг 2:** Реализовать компонент:
+- [x] Создать компонент `src/components/UI/GameOverMenu.tsx` ✅
+  - **Шаг 1:** Создать файл `src/components/UI/GameOverMenu.tsx` ✅
+  - **Шаг 2:** Реализовать компонент: ✅
     ```typescript
     import { useGame } from '../../contexts/GameContext';
     import styles from './GameOverMenu.module.css';
@@ -1299,7 +1299,7 @@
       );
     };
     ```
-  - **Шаг 3:** Добавить анимацию появления:
+  - **Шаг 3:** Добавить анимацию появления: ✅
     ```css
     .menu {
       animation: slideIn 0.3s ease-out;
@@ -1316,7 +1316,7 @@
       }
     }
     ```
-  - **Шаг 4:** Отображать GameOverMenu когда gameState === GAME_OVER
+  - **Шаг 4:** Отображать GameOverMenu когда gameState === GAME_OVER ✅
 
 ### 8.4 Стилизация UI
 - [ ] Создать стили для всех UI компонентов:
