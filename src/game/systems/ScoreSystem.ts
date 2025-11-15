@@ -26,6 +26,7 @@ export function checkObstaclePassed(
 
 /**
  * Вычисляет множитель сложности на основе счета
+ * Увеличивает сложность постепенно для более плавного игрового процесса
  * @param score - Текущий счет
  * @returns Множитель сложности (начинается с 1.0)
  */
@@ -33,7 +34,28 @@ export function getDifficultyMultiplier(score: number): number {
   // Защита от отрицательных значений
   const safeScore = Math.max(0, score);
   // Увеличиваем скорость каждые 10 очков на 5%
-  return 1 + Math.floor(safeScore / 10) * 0.05;
+  // Максимальный множитель ограничен 2.5 (150% увеличение скорости)
+  const multiplier = 1 + Math.floor(safeScore / 10) * 0.05;
+  return Math.min(multiplier, 2.5);
+}
+
+/**
+ * Вычисляет текущее расстояние между препятствиями с учетом сложности
+ * Уменьшает расстояние между препятствиями при увеличении счета
+ * @param score - Текущий счет
+ * @param baseSpacing - Базовое расстояние между препятствиями
+ * @returns Текущее расстояние между препятствиями
+ */
+export function getCurrentSpacing(score: number, baseSpacing: number): number {
+  // Защита от отрицательных значений
+  const safeScore = Math.max(0, score);
+  // Уменьшаем расстояние каждые 20 очков на 2%
+  // Минимальное расстояние - 70% от базового
+  const spacingMultiplier = Math.max(
+    1 - Math.floor(safeScore / 20) * 0.02,
+    0.7
+  );
+  return baseSpacing * spacingMultiplier;
 }
 
 /**
