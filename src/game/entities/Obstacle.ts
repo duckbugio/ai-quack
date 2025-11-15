@@ -4,6 +4,8 @@ import {
   PIPE_GAP,
   OBSTACLE_SPEED,
   CANVAS_HEIGHT,
+  PIPE_MIN_HEIGHT,
+  PIPE_MAX_HEIGHT,
 } from '../utils/constants';
 
 /**
@@ -27,9 +29,12 @@ export class Obstacle {
     this.gap = PIPE_GAP;
     this.lastX = x;
 
-    // Случайная высота верхней части (минимум 50px, максимум 300px)
-    const minHeight = 50;
-    const maxHeight = canvasHeight - this.gap - minHeight;
+    // Случайная высота верхней части (используем константы из constants.ts)
+    const minHeight = PIPE_MIN_HEIGHT;
+    const maxHeight = Math.min(
+      canvasHeight - this.gap - minHeight,
+      PIPE_MAX_HEIGHT
+    );
     this.topHeight = Math.random() * (maxHeight - minHeight) + minHeight;
 
     // Высота нижней части
