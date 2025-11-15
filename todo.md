@@ -1338,9 +1338,9 @@
   - **Выполнено:** Создана директория `src/assets/sounds/` с README инструкциями и скриптом для генерации звуков (`generate-sounds.js`)
 
 ### 9.2 Интеграция звуков
-- [ ] Создать файл `src/game/utils/SoundManager.ts`
-  - **Шаг 1:** Создать файл `src/game/utils/SoundManager.ts`
-  - **Шаг 2:** Реализовать класс SoundManager:
+- [x] Создать файл `src/game/utils/SoundManager.ts` ✅
+  - **Шаг 1:** Создать файл `src/game/utils/SoundManager.ts` ✅
+  - **Шаг 2:** Реализовать класс SoundManager: ✅
     ```typescript
     export class SoundManager {
       private sounds: Map<string, HTMLAudioElement> = new Map();
@@ -1378,34 +1378,38 @@
     
     export const soundManager = new SoundManager();
     ```
-  - **Шаг 3:** Загрузить звуки при инициализации игры:
+  - **Шаг 3:** Загрузить звуки при инициализации игры: ✅
     ```typescript
     soundManager.loadSound('jump', '/sounds/jump.mp3');
     soundManager.loadSound('hit', '/sounds/hit.mp3');
     soundManager.loadSound('score', '/sounds/score.mp3');
     ```
+    - Реализовано в `src/main.tsx`
 
 ### 9.3 Добавление звуков в игру
-- [ ] Воспроизведение звука прыжка при нажатии
-  - **Шаг 1:** В функции handleJump добавить:
+- [x] Воспроизведение звука прыжка при нажатии ✅
+  - **Шаг 1:** В функции handleJump добавить: ✅
     ```typescript
     duck.jump();
     soundManager.play('jump');
     ```
-- [ ] Воспроизведение звука при столкновении
-  - **Шаг 1:** В функции gameOver добавить:
+    - Реализовано в `src/components/Game/GameCanvas.tsx`
+- [x] Воспроизведение звука при столкновении ✅
+  - **Шаг 1:** В функции gameOver добавить: ✅
     ```typescript
     soundManager.play('hit');
     gameOver();
     ```
-- [ ] Воспроизведение звука при наборе очков
-  - **Шаг 1:** При увеличении счета:
+    - Реализовано в `src/components/Game/GameCanvas.tsx` (при столкновении с препятствиями и границами)
+- [x] Воспроизведение звука при наборе очков ✅
+  - **Шаг 1:** При увеличении счета: ✅
     ```typescript
     if (checkObstaclePassed(duck, obstacle)) {
       incrementScore();
       soundManager.play('score');
     }
     ```
+    - Реализовано в `src/components/Game/GameCanvas.tsx` в функции `checkCollisions`
 - [ ] Добавить настройку включения/выключения звуков в меню
   - **Шаг 1:** Добавить состояние в GameContext:
     ```typescript
