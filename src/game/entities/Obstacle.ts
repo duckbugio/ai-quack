@@ -42,8 +42,9 @@ export class Obstacle {
     this.passed = false;
   }
 
-  update(deltaTime: number): void {
-    const newX = this.x - OBSTACLE_SPEED * (deltaTime / 16);
+  update(deltaTime: number, speedMultiplier: number = 1): void {
+    const currentSpeed = OBSTACLE_SPEED * speedMultiplier;
+    const newX = this.x - currentSpeed * (deltaTime / 16);
     
     // Инвалидируем кэш при изменении позиции (препятствие движется каждый кадр)
     // Кэш будет работать для множественных вызовов getBounds в одном кадре

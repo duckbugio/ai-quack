@@ -10,8 +10,16 @@ import {
 } from '../../game/systems/CollisionSystem';
 import {
   checkAllObstaclesPassed,
+  getDifficultyMultiplier,
+  getCurrentSpacing,
 } from '../../game/systems/ScoreSystem';
-import { CANVAS_WIDTH, CANVAS_HEIGHT, GROUND_SPEED } from '../../game/utils/constants';
+import {
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  GROUND_SPEED,
+  OBSTACLE_SPEED,
+  PIPE_SPACING,
+} from '../../game/utils/constants';
 import { soundManager } from '../../game/utils/SoundManager';
 import styles from './GameCanvas.module.css';
 
@@ -211,9 +219,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   }, [incrementScore, width]);
 
   // Функция обновления движения земли
+  // Земля движется с учетом сложности для визуальной согласованности
   const updateGround = useCallback(
-    (deltaTime: number) => {
-      groundOffsetRef.current += GROUND_SPEED * (deltaTime / 16);
+    (deltaTime: number, speedMultiplier: number = 1) => {
+      const currentGroundSpeed = GROUND_SPEED * speedMultiplier;
+      groundOffsetRef.current += currentGroundSpeed * (deltaTime / 16);
       if (groundOffsetRef.current > width) {
         groundOffsetRef.current = 0;
       }
@@ -289,13 +299,18 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Игровой цикл: обновление состояния
   const update = useCallback(
     (deltaTime: number) => {
+      // Вычисляем множитель сложности на основе текущего счета
+      const difficultyMultiplier = getDifficultyMultiplier(score);
+      const currentSpacing = getCurrentSpacing(score, PIPE_SPACING);
+      
       // Обновление облаков (работает всегда для плавной анимации)
       updateClouds(deltaTime);
       
-      // Обновление земли (работает всегда для плавной анимации)
-      updateGround(deltaTime);
+      // Обновление земли с учетом сложности (работает всегда для плавной анимации)
+      updateGround(deltaTime, difficultyMultiplier);
       
       // Обновление деревьев (параллакс-эффект)
+      // Деревья движутся медленнее, но тоже с учетом сложности для согласованности
       updateTrees(deltaTime);
       
       // Обновление птиц (работает всегда для плавной анимации)
@@ -324,8 +339,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
 
-      // Обновление препятствий
-      obstacleManager.update(deltaTime);
+      // Обновление препятствий с учетом прогрессивной сложности
+      obstacleManager.update(deltaTime, difficultyMultiplier, currentSpacing);
 
       // Проверка коллизий с препятствиями и подсчет очков
       // Проверка границ уже выполнена в duck.update(), дублирование не требуется
@@ -336,7 +351,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     },
-    [gameState, height, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds]
+    [gameState, height, score, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds]
   );
 
   // Анимация счета при изменении
@@ -1127,7 +1142,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           lastTime = currentTime;
           
           updateClouds(deltaTime);
-          updateGround(deltaTime);
+          // В меню и при окончании игры используем базовую скорость
+          updateGround(deltaTime, 1);
           updateTrees(deltaTime);
           updateBirds(deltaTime);
           render();

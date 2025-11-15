@@ -12,6 +12,7 @@ import {
 export class ObstacleManager {
   obstacles: Obstacle[] = [];
   private lastSpawnX: number = CANVAS_WIDTH;
+  private currentSpacing: number = OBSTACLE_SPAWN_INTERVAL;
 
   /**
    * Создает новое препятствие и добавляет его в массив
@@ -19,16 +20,27 @@ export class ObstacleManager {
   spawnObstacle(): void {
     const obstacle = new Obstacle(this.lastSpawnX, CANVAS_HEIGHT);
     this.obstacles.push(obstacle);
-    this.lastSpawnX += OBSTACLE_SPAWN_INTERVAL;
+    this.lastSpawnX += this.currentSpacing;
   }
 
   /**
    * Обновляет состояние всех препятствий
    * @param deltaTime - Время, прошедшее с последнего кадра
+   * @param speedMultiplier - Множитель скорости препятствий (для прогрессивной сложности)
+   * @param spacing - Текущее расстояние между препятствиями (для прогрессивной сложности)
    */
-  update(deltaTime: number): void {
-    // Обновление всех препятствий
-    this.obstacles.forEach((obstacle) => obstacle.update(deltaTime));
+  update(
+    deltaTime: number,
+    speedMultiplier: number = 1,
+    spacing: number = OBSTACLE_SPAWN_INTERVAL
+  ): void {
+    // Обновляем текущее расстояние между препятствиями
+    this.currentSpacing = spacing;
+
+    // Обновление всех препятствий с учетом множителя скорости
+    this.obstacles.forEach((obstacle) =>
+      obstacle.update(deltaTime, speedMultiplier)
+    );
 
     // Удаление препятствий за экраном
     this.obstacles = this.obstacles.filter(
@@ -37,10 +49,7 @@ export class ObstacleManager {
 
     // Автоматическая генерация новых препятствий
     const lastObstacle = this.obstacles[this.obstacles.length - 1];
-    if (
-      !lastObstacle ||
-      lastObstacle.x < CANVAS_WIDTH - OBSTACLE_SPAWN_INTERVAL
-    ) {
+    if (!lastObstacle || lastObstacle.x < CANVAS_WIDTH - this.currentSpacing) {
       this.spawnObstacle();
     }
   }
@@ -67,6 +76,7 @@ export class ObstacleManager {
   reset(): void {
     this.obstacles = [];
     this.lastSpawnX = CANVAS_WIDTH;
+    this.currentSpacing = OBSTACLE_SPAWN_INTERVAL;
   }
 
   /**
