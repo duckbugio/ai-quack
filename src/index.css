@@ -28,6 +28,10 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
+  /* Предотвращаем горизонтальную прокрутку на мобильных */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 h1 {
