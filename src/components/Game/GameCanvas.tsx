@@ -28,7 +28,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -109,6 +109,23 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Подключение обработки клавиатуры
   useKeyboard(handleJump);
+  
+  // Обработка клавиши Escape для паузы/возобновления игры
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (gameState === GameState.PLAYING) {
+          pauseGame();
+        } else if (gameState === GameState.PAUSED) {
+          resumeGame();
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [gameState, pauseGame, resumeGame]);
   
   // Инициализация декоративных элементов
   useEffect(() => {
@@ -955,8 +972,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     // Отрисовка птиц (на переднем плане, но за препятствиями)
     drawBirds(ctx);
 
-    // Отрисовка игровых объектов только во время игры
-    if (gameState === GameState.PLAYING) {
+    // Отрисовка игровых объектов во время игры и паузы
+    if (gameState === GameState.PLAYING || gameState === GameState.PAUSED) {
       if (!duckRef.current || !obstacleManagerRef.current) return;
       
       const duck = duckRef.current;
@@ -1056,37 +1073,39 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     isRunning: gameState === GameState.PLAYING,
   });
 
-  // Отрисовка в состояниях MENU и GAME_OVER (когда игровой цикл не активен)
+  // Отрисовка в состояниях MENU, PAUSED и GAME_OVER (когда игровой цикл не активен)
   useEffect(() => {
-    if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
+    if (gameState === GameState.MENU || gameState === GameState.GAME_OVER || gameState === GameState.PAUSED) {
       render();
       
-      // Анимация облаков и земли в меню
-      let animationFrameId: number;
-      let lastTime = performance.now();
-      
-      const animateBackground = (currentTime: number) => {
-        const deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
+      // Анимация облаков и земли в меню (но не во время паузы - игра должна быть заморожена)
+      if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
+        let animationFrameId: number;
+        let lastTime = performance.now();
         
-        updateClouds(deltaTime);
-        updateGround(deltaTime);
-        updateTrees(deltaTime);
-        updateBirds(deltaTime);
-        render();
+        const animateBackground = (currentTime: number) => {
+          const deltaTime = currentTime - lastTime;
+          lastTime = currentTime;
+          
+          updateClouds(deltaTime);
+          updateGround(deltaTime);
+          updateTrees(deltaTime);
+          updateBirds(deltaTime);
+          render();
+          
+          if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
+            animationFrameId = requestAnimationFrame(animateBackground);
+          }
+        };
         
-        if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
-          animationFrameId = requestAnimationFrame(animateBackground);
-        }
-      };
-      
-      animationFrameId = requestAnimationFrame(animateBackground);
-      
-      return () => {
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-        }
-      };
+        animationFrameId = requestAnimationFrame(animateBackground);
+        
+        return () => {
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+          }
+        };
+      }
     }
   }, [gameState, render, updateClouds, updateGround, updateTrees, updateBirds]);
 
