@@ -8,6 +8,12 @@
   z-index: 5;
   backdrop-filter: blur(4px);
   animation: overlayFadeIn 0.3s ease-out;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.overlay.fadeIn {
+  opacity: 1;
 }
 
 @keyframes overlayFadeIn {
@@ -41,6 +47,12 @@
   max-width: 90vw;
   animation: slideInBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.menu.fadeIn {
+  opacity: 1;
 }
 
 @keyframes slideInBounce {

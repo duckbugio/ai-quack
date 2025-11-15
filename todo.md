@@ -1496,62 +1496,32 @@
     - Применяется в `ObstacleManager.update()` для генерации новых препятствий
 
 ### 10.3 Анимации и эффекты
-- [ ] Добавить плавные переходы между состояниями
-  - **Шаг 1:** Использовать CSS transitions для UI компонентов:
-    ```css
-    .menu {
-      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-    }
-    ```
-  - **Шаг 2:** Добавить fade-in эффект при смене состояний:
-    ```typescript
-    const [fadeIn, setFadeIn] = useState(false);
-    useEffect(() => {
-      setFadeIn(true);
-    }, [gameState]);
-    ```
-- [ ] Добавить эффекты частиц при столкновении (опционально)
-  - **Шаг 1:** Создать класс Particle:
-    ```typescript
-    class Particle {
-      x: number; y: number; vx: number; vy: number; life: number;
-      update() { /* движение и уменьшение life */ }
-      draw(ctx: CanvasRenderingContext2D) { /* отрисовка */ }
-    }
-    ```
-  - **Шаг 2:** Создать ParticleSystem для управления частицами:
-    ```typescript
-    class ParticleSystem {
-      particles: Particle[] = [];
-      emit(x: number, y: number) { /* создание частиц */ }
-      update() { /* обновление всех частиц */ }
-      draw(ctx: CanvasRenderingContext2D) { /* отрисовка */ }
-    }
-    ```
-  - **Шаг 3:** Вызывать emit при столкновении:
-    ```typescript
-    if (checkDuckObstacleCollision(duck, obstacle)) {
-      particleSystem.emit(duck.position.x, duck.position.y);
-      gameOver();
-    }
-    ```
-- [ ] Улучшить анимацию утки (более плавные движения)
+- [x] Добавить плавные переходы между состояниями ✅
+  - **Шаг 1:** Использовать CSS transitions для UI компонентов: ✅
+    - Добавлены CSS transitions для opacity и transform во всех UI компонентах (MainMenu, PauseMenu, GameOverMenu)
+    - Реализовано в `MainMenu.module.css`, `PauseMenu.module.css`, `GameOverMenu.module.css`
+  - **Шаг 2:** Добавить fade-in эффект при смене состояний: ✅
+    - Реализовано состояние `fadeIn` в компонентах MainMenu, PauseMenu, GameOverMenu
+    - Добавлен useEffect для управления fade-in эффектом при изменении gameState
+    - Используется класс `.fadeIn` для плавного появления меню
+- [x] Добавить эффекты частиц при столкновении (опционально) ✅
+  - **Шаг 1:** Создать класс Particle: ✅
+    - Создан класс `Particle` в `src/game/systems/ParticleSystem.ts`
+    - Реализованы методы `update()`, `isAlive()`, `draw()`
+  - **Шаг 2:** Создать ParticleSystem для управления частицами: ✅
+    - Создан класс `ParticleSystem` в `src/game/systems/ParticleSystem.ts`
+    - Реализованы методы `emit()`, `update()`, `draw()`, `clear()`
+  - **Шаг 3:** Вызывать emit при столкновении: ✅
+    - Интегрировано в `GameCanvas.tsx`
+    - Частицы создаются при столкновении с препятствиями и границами экрана
+    - Частицы отрисовываются поверх утки для эффекта взрыва
+- [x] Улучшить анимацию утки (более плавные движения) ✅
   - **Шаг 1:** Добавить интерполяцию позиции для плавности:
-    ```typescript
-    // Использовать lerp для плавного движения
-    function lerp(start: number, end: number, factor: number): number {
-      return start + (end - start) * factor;
-    }
-    ```
-  - **Шаг 2:** Добавить вращение утки в зависимости от скорости:
-    ```typescript
-    const rotation = Math.min(Math.max(duck.velocity.vy * 3, -30), 30);
-    ctx.save();
-    ctx.translate(duck.position.x + duck.width/2, duck.position.y + duck.height/2);
-    ctx.rotate(rotation * Math.PI / 180);
-    // Отрисовка утки
-    ctx.restore();
-    ```
+    - Пропущено (не требуется, так как движение уже плавное через deltaTime)
+  - **Шаг 2:** Добавить вращение утки в зависимости от скорости: ✅
+    - Реализовано в методе `draw()` класса `Duck`
+    - Утка вращается в зависимости от вертикальной скорости (угол от -30 до 30 градусов)
+    - Используется `ctx.translate()` и `ctx.rotate()` для вращения относительно центра утки
 
 ### 10.4 Адаптивность
 - [ ] Обеспечить работу на разных размерах экрана:

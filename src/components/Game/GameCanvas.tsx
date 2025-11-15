@@ -8,6 +8,7 @@ import { Duck } from '../../game/entities/Duck';
 import {
   checkAllCollisions,
 } from '../../game/systems/CollisionSystem';
+import { ParticleSystem } from '../../game/systems/ParticleSystem';
 import {
   checkAllObstaclesPassed,
   getDifficultyMultiplier,
@@ -43,6 +44,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Инициализация игровых объектов (создаются один раз)
   const duckRef = useRef<Duck | null>(null);
   const obstacleManagerRef = useRef<ObstacleManager | null>(null);
+  const particleSystemRef = useRef<ParticleSystem | null>(null);
   // Флаг для предотвращения повторных вызовов gameOver в одном кадре
   const gameOverCalledRef = useRef<boolean>(false);
   
@@ -88,6 +90,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   }
   if (!obstacleManagerRef.current) {
     obstacleManagerRef.current = new ObstacleManager();
+  }
+  if (!particleSystemRef.current) {
+    particleSystemRef.current = new ParticleSystem();
   }
   
   // Обработчик прыжка утки
@@ -334,6 +339,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const hitBoundary = duck.update(deltaTime, height);
       if (hitBoundary) {
         gameOverCalledRef.current = true;
+        // Создаем взрыв частиц в позиции утки при столкновении с границей
+        if (particleSystemRef.current) {
+          const centerX = duck.position.x + duck.width / 2;
+          const centerY = duck.position.y + duck.height / 2;
+          particleSystemRef.current.emit(centerX, centerY, 20, '#FF4500');
+        }
         soundManager.play('hit');
         gameOver();
         return;
@@ -342,10 +353,21 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Обновление препятствий с учетом прогрессивной сложности
       obstacleManager.update(deltaTime, difficultyMultiplier, currentSpacing);
 
+      // Обновление системы частиц
+      if (particleSystemRef.current) {
+        particleSystemRef.current.update(deltaTime);
+      }
+
       // Проверка коллизий с препятствиями и подсчет очков
       // Проверка границ уже выполнена в duck.update(), дублирование не требуется
       if (checkCollisions()) {
         gameOverCalledRef.current = true;
+        // Создаем взрыв частиц в позиции утки при столкновении
+        if (particleSystemRef.current && duck) {
+          const centerX = duck.position.x + duck.width / 2;
+          const centerY = duck.position.y + duck.height / 2;
+          particleSystemRef.current.emit(centerX, centerY, 20, '#FF4500');
+        }
         soundManager.play('hit');
         gameOver();
         return;
@@ -1026,6 +1048,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Отрисовка утки (поверх всего)
       duck.draw(ctx);
 
+      // Отрисовка системы частиц (поверх утки для эффекта взрыва)
+      if (particleSystemRef.current) {
+        particleSystemRef.current.draw(ctx);
+      }
+
       // Отрисовка счета
       drawScore(ctx);
 
@@ -1180,6 +1207,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
       if (obstacleManagerRef.current) {
         obstacleManagerRef.current.reset();
+      }
+      if (particleSystemRef.current) {
+        particleSystemRef.current.clear();
       }
     }
   }, [gameState]);
