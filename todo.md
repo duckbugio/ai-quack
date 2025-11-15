@@ -1196,7 +1196,7 @@
 ## Этап 8: UI компоненты и меню
 
 ### 8.1 Главное меню
-- [ ] Создать компонент `src/components/UI/MainMenu.tsx`
+- [x] Создать компонент `src/components/UI/MainMenu.tsx`
   - **Шаг 1:** Создать файл `src/components/UI/MainMenu.tsx`
   - **Шаг 2:** Импортировать необходимые зависимости:
     ```typescript

@@ -1,6 +1,23 @@
-import { GameProvider } from './contexts/GameContext';
+import { GameProvider, useGame } from './contexts/GameContext';
 import { GameCanvas } from './components/Game/GameCanvas';
+import { MainMenu } from './components/UI/MainMenu';
+import { GameState } from './types/game.types';
 import './App.css';
+
+/**
+ * Компонент содержимого приложения
+ * Использует контекст игры для условного рендеринга
+ */
+const AppContent = () => {
+  const { gameState } = useGame();
+  
+  return (
+    <div className="app-container">
+      <GameCanvas />
+      {gameState === GameState.MENU && <MainMenu />}
+    </div>
+  );
+};
 
 /**
  * Главный компонент приложения
@@ -8,10 +25,7 @@ import './App.css';
 function App() {
   return (
     <GameProvider>
-      <div className="app-container">
-        <h1>Duck Game</h1>
-        <GameCanvas />
-      </div>
+      <AppContent />
     </GameProvider>
   );
 }
