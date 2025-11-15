@@ -492,9 +492,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   );
 
   // Функция отрисовки облаков с улучшенной визуализацией
+  // Оптимизирована для отрисовки только видимых облаков
   const drawClouds = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       const offset = cloudOffsetRef.current;
+      const margin = 100; // Запас для плавной отрисовки
 
       // Вспомогательная функция для отрисовки одного облака
       const drawSingleCloud = (
@@ -503,6 +505,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         size: number,
         opacity: number = 0.8
       ) => {
+        // Проверяем, видимо ли облако (оптимизация)
+        if (x + size < -margin || x - size > width + margin) {
+          return; // Пропускаем невидимые облака
+        }
+
         ctx.save();
         
         // Тень облака для объема
@@ -597,6 +604,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   );
 
   // Функция отрисовки деревьев на заднем плане
+  // Оптимизирована для отрисовки только видимых деревьев
   const drawTrees = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       const trees = treesRef.current;
@@ -604,9 +612,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const offset = treesOffsetRef.current;
       
       // Фильтруем только видимые деревья для оптимизации
+      // Увеличиваем запас для плавной отрисовки при движении
+      const margin = 100;
       const visibleTrees = trees.filter((tree) => {
         const treeScreenX = tree.x - offset;
-        return treeScreenX + 100 > -50 && treeScreenX < width + 50;
+        return treeScreenX + 100 > -margin && treeScreenX < width + margin;
       });
       
       visibleTrees.forEach((tree) => {
@@ -722,6 +732,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   );
   
   // Функция отрисовки цветов на земле
+  // Оптимизирована для отрисовки только видимых цветов
   const drawFlowers = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       const flowers = flowersRef.current;
@@ -729,9 +740,11 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const offset = groundOffsetRef.current;
       
       // Фильтруем только видимые цветы для оптимизации
+      // Увеличиваем запас для плавной отрисовки при движении
+      const margin = 50;
       const visibleFlowers = flowers.filter((flower) => {
         const flowerScreenX = (flower.x - offset) % (width + 100);
-        return flowerScreenX > -20 && flowerScreenX < width + 20;
+        return flowerScreenX > -margin && flowerScreenX < width + margin;
       });
       
       visibleFlowers.forEach((flower) => {
@@ -819,11 +832,18 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   );
   
   // Функция отрисовки птиц
+  // Оптимизирована для отрисовки только видимых птиц
   const drawBirds = useCallback(
     (ctx: CanvasRenderingContext2D) => {
       const birds = birdsRef.current;
+      const margin = 50; // Запас для плавной отрисовки
       
-      birds.forEach((bird) => {
+      // Фильтруем только видимые птицы для оптимизации
+      const visibleBirds = birds.filter((bird) => {
+        return bird.x > -margin && bird.x < width + margin;
+      });
+      
+      visibleBirds.forEach((bird) => {
         ctx.save();
         
         // Позиция птицы
@@ -1080,16 +1100,29 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   });
 
   // Отрисовка в состояниях MENU, PAUSED и GAME_OVER (когда игровой цикл не активен)
+  // Используем ref для отслеживания gameState, чтобы избежать проблем с замыканием
+  const gameStateRef = useRef(gameState);
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
+
   useEffect(() => {
     if (gameState === GameState.MENU || gameState === GameState.GAME_OVER || gameState === GameState.PAUSED) {
       render();
       
       // Анимация облаков и земли в меню (но не во время паузы - игра должна быть заморожена)
       if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
-        let animationFrameId: number;
+        let animationFrameId: number | undefined;
         let lastTime = performance.now();
+        let isRunning = true;
         
         const animateBackground = (currentTime: number) => {
+          // Проверяем актуальное состояние через ref для предотвращения утечек
+          const currentState = gameStateRef.current;
+          if (!isRunning || (currentState !== GameState.MENU && currentState !== GameState.GAME_OVER)) {
+            return;
+          }
+          
           const deltaTime = currentTime - lastTime;
           lastTime = currentTime;
           
@@ -1099,7 +1132,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           updateBirds(deltaTime);
           render();
           
-          if (gameState === GameState.MENU || gameState === GameState.GAME_OVER) {
+          // Продолжаем анимацию только если состояние не изменилось
+          if (isRunning && (gameStateRef.current === GameState.MENU || gameStateRef.current === GameState.GAME_OVER)) {
             animationFrameId = requestAnimationFrame(animateBackground);
           }
         };
@@ -1107,7 +1141,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         animationFrameId = requestAnimationFrame(animateBackground);
         
         return () => {
-          if (animationFrameId) {
+          isRunning = false;
+          if (animationFrameId !== undefined) {
             cancelAnimationFrame(animationFrameId);
           }
         };

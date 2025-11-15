@@ -48,12 +48,15 @@ export class ObstacleManager {
   /**
    * Отрисовывает все препятствия на canvas
    * Оптимизированная версия - отрисовывает только видимые препятствия
+   * Добавлен небольшой запас для плавной отрисовки при движении
    * @param ctx - Контекст canvas для отрисовки
    */
   draw(ctx: CanvasRenderingContext2D): void {
     // Отрисовываем только препятствия в зоне видимости (оптимизация)
+    // Добавляем небольшой запас (50px) для плавной отрисовки при движении
+    const margin = 50;
     const visibleObstacles = this.obstacles.filter(
-      (obs) => obs.x + obs.width > 0 && obs.x < CANVAS_WIDTH
+      (obs) => obs.x + obs.width > -margin && obs.x < CANVAS_WIDTH + margin
     );
     visibleObstacles.forEach((obstacle) => obstacle.draw(ctx));
   }
