@@ -144,7 +144,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     soundManager.play('score');
   });
 
-  // Пасхалка: слово "quack" — мгновенно выдает утке солнечные очки
+  // Пасхалка: слово "quack" - мгновенно выдает утке солнечные очки
   useSecretSequence(['q','u','a','c','k'], () => {
     unlockSunglasses();
     // Небольшой визуальный эффект рядом с уткой
