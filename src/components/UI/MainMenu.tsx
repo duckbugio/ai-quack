@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { GameState } from '../../types/game.types';
 import { soundManager } from '../../game/utils/SoundManager';
+import { CHARACTER_SKINS } from '../../game/utils/constants';
 import styles from './MainMenu.module.css';
 
 /**
@@ -9,7 +10,7 @@ import styles from './MainMenu.module.css';
  * Отображается когда gameState === MENU
  */
 export const MainMenu: React.FC = () => {
-  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState } = useGame();
+  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState, selectedCharacter, setSelectedCharacter } = useGame();
   const [fadeIn, setFadeIn] = useState(false);
   
   // Fade-in эффект при появлении меню
@@ -56,6 +57,28 @@ export const MainMenu: React.FC = () => {
       aria-label="Главное меню игры"
     >
       <h1 className={styles.title}>🦆 Утка</h1>
+      <div className={styles.characterSection} aria-label="Выбор персонажа">
+        <div className={styles.characterTitle}>Выберите персонажа</div>
+        <div className={styles.characterList} role="listbox" aria-activedescendant={`char-${selectedCharacter}`}>
+          {Object.values(CHARACTER_SKINS).map((skin) => (
+            <button
+              key={skin.id}
+              id={`char-${skin.id}`}
+              className={`${styles.characterItem} ${selectedCharacter === skin.id ? styles.characterItemSelected : ''}`}
+              onClick={() => setSelectedCharacter(skin.id)}
+              aria-pressed={selectedCharacter === skin.id}
+              title={skin.name}
+            >
+              <span
+                className={styles.characterSwatch}
+                style={{ backgroundColor: skin.bodyColor }}
+                aria-hidden
+              />
+              <span className={styles.characterName}>{skin.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       {highScore > 0 && (
         <div className={styles.highScore} aria-live="polite">
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>

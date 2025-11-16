@@ -39,3 +39,15 @@ export interface GameConfig {
   pipeGap: number;
   pipeSpacing: number;
 }
+
+// Персонажи/скины
+export type CharacterId = 'classic' | 'blue' | 'red' | 'green';
+
+export interface CharacterSkin {
+  id: CharacterId;
+  name: string;
+  bodyColor: string;
+  wingColor: string;
+  beakColor: string;
+  eyeColor: string;
+}

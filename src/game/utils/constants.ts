@@ -56,3 +56,43 @@ export const GAME_CONFIG = {
   duck: { width: DUCK_WIDTH, height: DUCK_HEIGHT },
   obstacles: { width: PIPE_WIDTH, gap: PIPE_GAP, spacing: PIPE_SPACING },
 } as const;
+
+// Скины персонажей
+import type { CharacterSkin } from '../../types/game.types';
+
+export const CHARACTER_SKINS: Record<string, CharacterSkin> = {
+  classic: {
+    id: 'classic',
+    name: 'Классика',
+    bodyColor: '#FFA500',
+    wingColor: '#FF8C00',
+    beakColor: '#FF8C00',
+    eyeColor: '#000000',
+  },
+  blue: {
+    id: 'blue',
+    name: 'Синий',
+    bodyColor: '#1E90FF',
+    wingColor: '#187bcd',
+    beakColor: '#FFA500',
+    eyeColor: '#000000',
+  },
+  red: {
+    id: 'red',
+    name: 'Красный',
+    bodyColor: '#FF6347',
+    wingColor: '#E5533B',
+    beakColor: '#FFB000',
+    eyeColor: '#000000',
+  },
+  green: {
+    id: 'green',
+    name: 'Зелёный',
+    bodyColor: '#2ECC71',
+    wingColor: '#27AE60',
+    beakColor: '#F1C40F',
+    eyeColor: '#000000',
+  },
+};
+
+export const DEFAULT_CHARACTER_ID = 'classic' as const;

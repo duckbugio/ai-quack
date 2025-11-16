@@ -21,6 +21,7 @@ import {
   OBSTACLE_SPEED,
   PIPE_SPACING,
 } from '../../game/utils/constants';
+import { CHARACTER_SKINS } from '../../game/utils/constants';
 import { soundManager } from '../../game/utils/SoundManager';
 import { performanceMonitor } from '../../game/utils/PerformanceMonitor';
 import styles from './GameCanvas.module.css';
@@ -39,7 +40,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, selectedCharacter } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -87,7 +88,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
-    duckRef.current = new Duck();
+    duckRef.current = new Duck(CHARACTER_SKINS[selectedCharacter]);
   }
   if (!obstacleManagerRef.current) {
     obstacleManagerRef.current = new ObstacleManager();
@@ -142,6 +143,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [gameState, pauseGame, resumeGame]);
+
+  // Обновление скина утки при изменении выбора персонажа в меню
+  useEffect(() => {
+    if (duckRef.current) {
+      duckRef.current.setSkin(CHARACTER_SKINS[selectedCharacter]);
+    }
+  }, [selectedCharacter]);
   
   // Инициализация декоративных элементов
   useEffect(() => {
