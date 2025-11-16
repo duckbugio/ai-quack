@@ -320,6 +320,24 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     [width, height]
   );
 
+  // Эмиссия конфетти в party mode вынесена отдельно
+  const emitPartyModeConfetti = useCallback(
+    (deltaTime: number) => {
+      if (!particleSystemRef.current || !easterEggs.partyMode) return;
+      partyTimerRef.current += deltaTime;
+      if (partyTimerRef.current > 150) {
+        partyTimerRef.current = 0;
+        const colors = ['#FF3B30','#FF9500','#FFCC00','#34C759','#5AC8FA','#007AFF','#AF52DE'];
+        const x = Math.random() * width;
+        const y = 80 + Math.random() * (height * 0.5);
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        // Несколько пульсаций для плотности
+        particleSystemRef.current.emit(x, y, 10, color);
+      }
+    },
+    [easterEggs.partyMode, width, height]
+  );
+
   // Игровой цикл: обновление состояния
   const update = useCallback(
     (deltaTime: number) => {
@@ -378,18 +396,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
 
       // Эмиссия конфетти в party mode
-      if (particleSystemRef.current && easterEggs.partyMode) {
-        partyTimerRef.current += deltaTime;
-        if (partyTimerRef.current > 150) {
-          partyTimerRef.current = 0;
-          const colors = ['#FF3B30','#FF9500','#FFCC00','#34C759','#5AC8FA','#007AFF','#AF52DE'];
-          const x = Math.random() * width;
-          const y = 80 + Math.random() * (height * 0.5);
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          // Несколько пульсаций для плотности
-          particleSystemRef.current.emit(x, y, 10, color);
-        }
-      }
+      emitPartyModeConfetti(deltaTime);
 
       // Проверка коллизий с препятствиями и подсчет очков
       // Проверка границ уже выполнена в duck.update(), дублирование не требуется
@@ -406,7 +413,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     },
-    [gameState, height, score, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds, easterEggs.partyMode]
+    [gameState, height, score, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds, emitPartyModeConfetti]
   );
 
   // Анимация счета при изменении
