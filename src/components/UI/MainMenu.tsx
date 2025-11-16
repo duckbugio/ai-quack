@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
 import { GameState } from '../../types/game.types';
 import { soundManager } from '../../game/utils/SoundManager';
+import { CHARACTERS } from '../../game/utils/characters';
 import styles from './MainMenu.module.css';
 
 /**
@@ -9,7 +10,7 @@ import styles from './MainMenu.module.css';
  * Отображается когда gameState === MENU
  */
 export const MainMenu: React.FC = () => {
-  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState } = useGame();
+  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState, selectedCharacter, setSelectedCharacter } = useGame();
   const [fadeIn, setFadeIn] = useState(false);
   
   // Fade-in эффект при появлении меню
@@ -61,6 +62,24 @@ export const MainMenu: React.FC = () => {
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>
         </div>
       )}
+
+      <div className={styles.characters} aria-label="Выбор персонажа">
+        {CHARACTERS.map((ch) => (
+          <button
+            key={ch.id}
+            type="button"
+            className={`${styles.characterCard} ${selectedCharacter.id === ch.id ? styles.characterSelected : ''}`}
+            onClick={() => setSelectedCharacter(ch.id)}
+            aria-pressed={selectedCharacter.id === ch.id}
+            aria-label={`Персонаж ${ch.name}`}
+          >
+            <span className={styles.characterEmoji} aria-hidden>
+              {ch.emoji}
+            </span>
+            <span className={styles.characterName}>{ch.name}</span>
+          </button>
+        ))}
+      </div>
       <button 
         className={styles.startButton} 
         onClick={startGame}

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { GameState } from '../types/game.types';
+import { GameState, CharacterOption } from '../types/game.types';
 import { soundManager } from '../game/utils/SoundManager';
+import { CHARACTERS, DEFAULT_CHARACTER_ID } from '../game/utils/characters';
 
 /**
  * Интерфейс контекста игры
@@ -11,6 +12,7 @@ interface GameContextType {
   score: number;
   highScore: number;
   soundEnabled: boolean;
+  selectedCharacter: CharacterOption;
   startGame: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
@@ -18,6 +20,7 @@ interface GameContextType {
   resetGame: () => void;
   incrementScore: () => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setSelectedCharacter: (characterId: string) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -60,6 +63,21 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     return true; // По умолчанию звуки включены
+  });
+
+  // Выбранный персонаж (палитра)
+  const [selectedCharacter, setSelectedCharacterState] = useState<CharacterOption>(() => {
+    try {
+      const saved = localStorage.getItem('duck-game-selected-character');
+      const fallback = CHARACTERS.find((c) => c.id === DEFAULT_CHARACTER_ID) || CHARACTERS[0];
+      if (saved) {
+        const found = CHARACTERS.find((c) => c.id === saved);
+        return found || fallback;
+      }
+      return fallback;
+    } catch {
+      return CHARACTERS[0];
+    }
   });
   
   // Синхронизация состояния звуков с SoundManager при инициализации и изменении
@@ -113,6 +131,19 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setSelectedCharacter = (characterId: string) => {
+    const found = CHARACTERS.find((c) => c.id === characterId);
+    if (!found) return;
+    setSelectedCharacterState(found);
+    try {
+      localStorage.setItem('duck-game-selected-character', found.id);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось сохранить выбранного персонажа в localStorage:', error);
+      }
+    }
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -120,6 +151,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score,
         highScore,
         soundEnabled,
+        selectedCharacter,
         startGame,
         pauseGame,
         resumeGame,
@@ -127,6 +159,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         resetGame,
         incrementScore,
         setSoundEnabled,
+        setSelectedCharacter,
       }}
     >
       {children}

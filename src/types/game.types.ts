@@ -39,3 +39,16 @@ export interface GameConfig {
   pipeGap: number;
   pipeSpacing: number;
 }
+
+// Параметры визуального персонажа (палитра утки)
+export interface CharacterOption {
+  id: string;
+  name: string;
+  emoji: string;
+  colors: {
+    body: string;
+    beak: string;
+    wing: string;
+    eye: string;
+  };
+}
