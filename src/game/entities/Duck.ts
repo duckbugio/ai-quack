@@ -53,6 +53,12 @@ export class Duck {
       widthOverride: DUCK_WIDTH * 0.95,
       heightOverride: DUCK_HEIGHT * 0.95,
     },
+    orange: {
+      bodyColor: '#FF7F24', // ярко-оранжевый, отличимый от classic
+      beakColor: '#FF6A00',
+      wingColor: '#FF8C40',
+      eyeColor: '#000000',
+    },
   };
 
   constructor(appearance?: DuckAppearance) {

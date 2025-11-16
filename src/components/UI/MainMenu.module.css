@@ -239,7 +239,7 @@
 
 .characterList {
   display: grid;
-  grid-template-columns: repeat(4, minmax(80px, 1fr));
+  grid-template-columns: repeat(5, minmax(80px, 1fr));
   gap: 12px;
 }
 
@@ -287,6 +287,7 @@
 .characterPreview[data-char="blue"] { background: #1E90FF; }
 .characterPreview[data-char="red"] { background: #DC143C; }
 .characterPreview[data-char="ninja"] { background: #2F4F4F; }
+.characterPreview[data-char="orange"] { background: #FF7F24; }
 
 /* Клюв (малый прямоугольник) */
 .characterPreview::after {
@@ -300,7 +301,8 @@
 
 .characterPreview[data-char="classic"]::after,
 .characterPreview[data-char="blue"]::after,
-.characterPreview[data-char="red"]::after { background: #FF8C00; }
+.characterPreview[data-char="red"]::after,
+.characterPreview[data-char="orange"]::after { background: #FF8C00; }
 .characterPreview[data-char="ninja"]::after { background: #A0522D; }
 
 /* Глаз */
@@ -314,7 +316,8 @@
 .characterPreview[data-char="ninja"]::before { background: #FFFFFF; }
 .characterPreview[data-char="classic"]::before,
 .characterPreview[data-char="blue"]::before,
-.characterPreview[data-char="red"]::before { background: #000000; }
+.characterPreview[data-char="red"]::before,
+.characterPreview[data-char="orange"]::before { background: #000000; }
 
 .characterLabel {
   font-size: 12px;
@@ -323,7 +326,7 @@
 }
 
 @media (max-width: 768px) {
-  .characterList { grid-template-columns: repeat(4, minmax(64px, 1fr)); }
+  .characterList { grid-template-columns: repeat(5, minmax(64px, 1fr)); }
   .characterPreview { width: 48px; height: 34px; }
 }
 

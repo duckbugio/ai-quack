@@ -68,7 +68,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCharacter, setSelectedCharacterState] = useState<CharacterId>(() => {
     try {
       const saved = localStorage.getItem('duck-game-character');
-      if (saved === 'classic' || saved === 'blue' || saved === 'red' || saved === 'ninja') {
+      if (saved === 'classic' || saved === 'blue' || saved === 'red' || saved === 'ninja' || saved === 'orange') {
         return saved as CharacterId;
       }
     } catch (error) {

@@ -64,7 +64,7 @@ export const MainMenu: React.FC = () => {
 
       <div className={styles.characterSelect} aria-label="Выбор персонажа">
         <div className={styles.characterList} role="listbox" aria-activedescendant={`char-${selectedCharacter}`}>
-          {(['classic','blue','red','ninja'] as CharacterId[]).map((id) => (
+          {(['classic','blue','red','ninja','orange'] as CharacterId[]).map((id) => (
             <button
               key={id}
               id={`char-${id}`}
@@ -75,7 +75,15 @@ export const MainMenu: React.FC = () => {
             >
               <span className={styles.characterPreview} data-char={id} />
               <span className={styles.characterLabel}>
-                {id === 'classic' ? 'Классика' : id === 'blue' ? 'Синяя' : id === 'red' ? 'Красная' : 'Ниндзя'}
+                {id === 'classic'
+                  ? 'Классика'
+                  : id === 'blue'
+                  ? 'Синяя'
+                  : id === 'red'
+                  ? 'Красная'
+                  : id === 'ninja'
+                  ? 'Ниндзя'
+                  : 'Оранжевая'}
               </span>
             </button>
           ))}

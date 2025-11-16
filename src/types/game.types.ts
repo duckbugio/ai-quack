@@ -41,7 +41,7 @@ export interface GameConfig {
 }
 
 // Идентификатор персонажа (скина)
-export type CharacterId = 'classic' | 'blue' | 'red' | 'ninja';
+export type CharacterId = 'classic' | 'blue' | 'red' | 'ninja' | 'orange';
 
 // Внешний вид утки/персонажа
 export interface DuckAppearance {
