@@ -6,6 +6,19 @@ import { useEffect, useRef } from 'react';
 export const useSecretSequence = (sequence: string[], onActivate: () => void) => {
   const bufferRef = useRef<string[]>([]);
   const seqRef = useRef(sequence.map((k) => k.toLowerCase()));
+  const onActivateRef = useRef(onActivate);
+
+  // Keep latest callback without re-subscribing the listener
+  useEffect(() => {
+    onActivateRef.current = onActivate;
+  }, [onActivate]);
+
+  // Keep sequence ref in sync if sequence changes
+  useEffect(() => {
+    seqRef.current = sequence.map((k) => k.toLowerCase());
+    // Reset buffer when target sequence changes to avoid stale partial matches
+    bufferRef.current = [];
+  }, [sequence]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -18,12 +31,12 @@ export const useSecretSequence = (sequence: string[], onActivate: () => void) =>
       // Compare
       const isMatch = seqRef.current.every((v, i) => bufferRef.current[i] === v);
       if (isMatch) {
-        onActivate();
+        onActivateRef.current?.();
         bufferRef.current = [];
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onActivate]);
+  }, []);
 };
