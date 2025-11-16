@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { GameState } from '../types/game.types';
+import { GameState, CharacterType } from '../types/game.types';
 import { soundManager } from '../game/utils/SoundManager';
 
 /**
@@ -11,6 +11,7 @@ interface GameContextType {
   score: number;
   highScore: number;
   soundEnabled: boolean;
+  selectedCharacter: CharacterType;
   startGame: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
@@ -18,6 +19,7 @@ interface GameContextType {
   resetGame: () => void;
   incrementScore: () => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setSelectedCharacter: (character: CharacterType) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -60,6 +62,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     return true; // По умолчанию звуки включены
+  });
+  
+  const [selectedCharacter, setSelectedCharacterState] = useState<CharacterType>(() => {
+    try {
+      const saved = localStorage.getItem('duck-game-character');
+      if (saved && Object.values(CharacterType).includes(saved as CharacterType)) {
+        return saved as CharacterType;
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось загрузить выбранного персонажа из localStorage:', error);
+      }
+    }
+    return CharacterType.CLASSIC;
   });
   
   // Синхронизация состояния звуков с SoundManager при инициализации и изменении
@@ -113,6 +129,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setSelectedCharacter = (character: CharacterType) => {
+    setSelectedCharacterState(character);
+    try {
+      localStorage.setItem('duck-game-character', character);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось сохранить выбранного персонажа в localStorage:', error);
+      }
+    }
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -120,6 +147,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score,
         highScore,
         soundEnabled,
+        selectedCharacter,
         startGame,
         pauseGame,
         resumeGame,
@@ -127,6 +155,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         resetGame,
         incrementScore,
         setSoundEnabled,
+        setSelectedCharacter,
       }}
     >
       {children}

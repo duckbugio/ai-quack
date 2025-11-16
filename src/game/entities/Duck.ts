@@ -1,4 +1,4 @@
-import { Position, Velocity, Bounds } from '../../types/game.types';
+import { Position, Velocity, Bounds, CharacterType } from '../../types/game.types';
 import {
   GRAVITY,
   JUMP_FORCE,
@@ -18,17 +18,19 @@ export class Duck {
   velocity: Velocity;
   width: number;
   height: number;
+  character: CharacterType;
   private wingState: 'up' | 'down' = 'up';
   private wingAnimationTimer: number = 0;
   private cachedBounds: Bounds | null = null;
   private lastPositionX: number = DUCK_START_X;
   private lastPositionY: number = DUCK_START_Y;
 
-  constructor() {
+  constructor(character: CharacterType = CharacterType.CLASSIC) {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
     this.velocity = { vx: 0, vy: 0 };
     this.width = DUCK_WIDTH;
     this.height = DUCK_HEIGHT;
+    this.character = character;
     this.lastPositionX = DUCK_START_X;
     this.lastPositionY = DUCK_START_Y;
   }
@@ -114,8 +116,17 @@ export class Duck {
     ctx.translate(centerX, centerY);
     ctx.rotate(rotationRad);
 
+    // Выбор цветовой схемы в зависимости от персонажа
+    const colorsByCharacter: Record<CharacterType, { body: string; beak: string; wing: string; eye?: string }> = {
+      [CharacterType.CLASSIC]: { body: '#FFA500', beak: '#FF8C00', wing: '#FF8C00', eye: '#000' },
+      [CharacterType.BLUE]: { body: '#1E90FF', beak: '#FFB347', wing: '#187bcd', eye: '#001b2e' },
+      [CharacterType.RED]: { body: '#FF4C4C', beak: '#FFB347', wing: '#CC0000', eye: '#1a0000' },
+      [CharacterType.NINJA]: { body: '#2F2F2F', beak: '#F2C14E', wing: '#1E1E1E', eye: '#FFFFFF' },
+    };
+    const palette = colorsByCharacter[this.character] ?? colorsByCharacter[CharacterType.CLASSIC];
+
     // Тело утки (эллипс) - теперь относительно центра
-    ctx.fillStyle = '#FFA500';
+    ctx.fillStyle = palette.body;
     ctx.beginPath();
     ctx.ellipse(
       0,
@@ -129,7 +140,7 @@ export class Duck {
     ctx.fill();
 
     // Клюв (относительно центра)
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = palette.beak;
     ctx.fillRect(
       this.width / 2 - 10,
       -3,
@@ -139,7 +150,7 @@ export class Duck {
 
     // Крылья (с анимацией) - относительно центра
     const wingOffset = this.wingState === 'up' ? -5 : 5;
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = palette.wing;
     ctx.fillRect(
       -this.width / 2 + 5,
       -5 + wingOffset,
@@ -148,7 +159,7 @@ export class Duck {
     );
 
     // Глаз (относительно центра)
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = palette.eye ?? '#000';
     ctx.fillRect(
       this.width / 2 - 15,
       -7,
@@ -193,5 +204,13 @@ export class Duck {
     this.cachedBounds = null;
     this.lastPositionX = DUCK_START_X;
     this.lastPositionY = DUCK_START_Y;
+  }
+
+  /**
+   * Устанавливает тип персонажа и сбрасывает кэш границ
+   */
+  setCharacter(character: CharacterType): void {
+    this.character = character;
+    this.cachedBounds = null;
   }
 }

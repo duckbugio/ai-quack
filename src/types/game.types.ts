@@ -39,3 +39,11 @@ export interface GameConfig {
   pipeGap: number;
   pipeSpacing: number;
 }
+
+// Доступные персонажи/скины
+export enum CharacterType {
+  CLASSIC = 'classic',
+  BLUE = 'blue',
+  RED = 'red',
+  NINJA = 'ninja',
+}
