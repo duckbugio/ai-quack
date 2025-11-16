@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react'
 import { useGame } from '../../contexts/GameContext';
 import { GameState } from '../../types/game.types';
 import { useKeyboard } from '../../hooks/useKeyboard';
+import { useSecretSequence } from '../../hooks/useSecretSequence';
 import { useGameLoop } from '../../hooks/useGameLoop';
 import { ObstacleManager } from '../../game/systems/ObstacleManager';
 import { Duck } from '../../game/entities/Duck';
@@ -39,7 +40,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, easterEggs, setPartyMode, unlockSunglasses } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -51,6 +52,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Состояние для анимации счета
   const [scoreScale, setScoreScale] = useState(1);
+  // Таймер для party mode конфетти
+  const partyTimerRef = useRef<number>(0);
   
   // Состояние для движения облаков
   const cloudOffsetRef = useRef<number>(0);
@@ -125,6 +128,21 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Подключение обработки клавиатуры
   useKeyboard(handleJump);
+
+  // Пасхалка: Konami code включает party mode
+  useSecretSequence(
+    ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'],
+    () => {
+      setPartyMode(true);
+      soundManager.play('score');
+    }
+  );
+
+  // Пасхалка: слово "party" также включает режим для удобства
+  useSecretSequence(['p','a','r','t','y'], () => {
+    setPartyMode(true);
+    soundManager.play('score');
+  });
   
   // Обработка клавиши Escape для паузы/возобновления игры
   useEffect(() => {
@@ -357,6 +375,20 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Обновление системы частиц
       if (particleSystemRef.current) {
         particleSystemRef.current.update(deltaTime);
+      }
+
+      // Эмиссия конфетти в party mode
+      if (particleSystemRef.current && easterEggs.partyMode) {
+        partyTimerRef.current += deltaTime;
+        if (partyTimerRef.current > 150) {
+          partyTimerRef.current = 0;
+          const colors = ['#FF3B30','#FF9500','#FFCC00','#34C759','#5AC8FA','#007AFF','#AF52DE'];
+          const x = Math.random() * width;
+          const y = 80 + Math.random() * (height * 0.5);
+          const color = colors[Math.floor(Math.random() * colors.length)];
+          // Несколько пульсаций для плотности
+          particleSystemRef.current.emit(x, y, 10, color);
+        }
       }
 
       // Проверка коллизий с препятствиями и подсчет очков
@@ -1054,6 +1086,25 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Отрисовка утки (поверх всего)
       duck.draw(ctx);
 
+      // Пасхалка: солнцезащитные очки у утки
+      if (easterEggs.sunglassesUnlocked || easterEggs.partyMode) {
+        ctx.save();
+        const centerX = duck.position.x + duck.width / 2;
+        const centerY = duck.position.y + duck.height / 2;
+        ctx.translate(centerX, centerY);
+        // Смещаем к "глазам" относительно центра утки
+        ctx.translate(duck.width / 2 - 15, -5);
+        ctx.fillStyle = '#000000';
+        // Линзы
+        ctx.fillRect(-6, -3, 6, 6);
+        ctx.fillRect(2, -3, 6, 6);
+        // Перемычка
+        ctx.fillRect(0, -1, 2, 2);
+        // Дужка
+        ctx.fillRect(8, -1, 6, 2);
+        ctx.restore();
+      }
+
       // Отрисовка системы частиц (поверх утки для эффекта взрыва)
       if (particleSystemRef.current) {
         particleSystemRef.current.draw(ctx);
@@ -1139,6 +1190,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
   }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround, drawTrees, drawFlowers, drawBirds]);
+  
+  // Разблокировка очков при достижении 42
+  useEffect(() => {
+    if (gameState === GameState.PLAYING && score >= 42 && !easterEggs.sunglassesUnlocked) {
+      unlockSunglasses();
+      soundManager.play('score');
+    }
+  }, [score, gameState, easterEggs.sunglassesUnlocked, unlockSunglasses]);
 
   // Подключение игрового цикла
   useGameLoop({

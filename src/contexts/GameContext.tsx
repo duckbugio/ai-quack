@@ -11,6 +11,10 @@ interface GameContextType {
   score: number;
   highScore: number;
   soundEnabled: boolean;
+  easterEggs: {
+    partyMode: boolean;
+    sunglassesUnlocked: boolean;
+  };
   startGame: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
@@ -18,6 +22,8 @@ interface GameContextType {
   resetGame: () => void;
   incrementScore: () => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setPartyMode: (enabled: boolean) => void;
+  unlockSunglasses: () => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -29,6 +35,8 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [gameState, setGameState] = useState<GameState>(GameState.MENU);
   const [score, setScore] = useState(0);
+  const [partyMode, setPartyModeState] = useState<boolean>(false);
+  const [sunglassesUnlocked, setSunglassesUnlocked] = useState<boolean>(false);
   const [highScore, setHighScore] = useState(() => {
     try {
       const saved = localStorage.getItem('duck-game-highscore');
@@ -97,6 +105,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const resetGame = () => {
     setGameState(GameState.MENU);
     setScore(0);
+    // Reset session-only easter eggs
+    setSunglassesUnlocked(false);
   };
 
   const incrementScore = () => setScore((prev) => prev + 1);
@@ -113,6 +123,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setPartyMode = (enabled: boolean) => {
+    setPartyModeState(enabled);
+  };
+
+  const unlockSunglasses = () => {
+    setSunglassesUnlocked(true);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -120,6 +138,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score,
         highScore,
         soundEnabled,
+        easterEggs: {
+          partyMode,
+          sunglassesUnlocked,
+        },
         startGame,
         pauseGame,
         resumeGame,
@@ -127,6 +149,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         resetGame,
         incrementScore,
         setSoundEnabled,
+        setPartyMode,
+        unlockSunglasses,
       }}
     >
       {children}
