@@ -39,7 +39,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, selectedCharacter } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -87,7 +87,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
-    duckRef.current = new Duck();
+    duckRef.current = new Duck(selectedCharacter);
   }
   if (!obstacleManagerRef.current) {
     obstacleManagerRef.current = new ObstacleManager();
@@ -1214,9 +1214,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       setScoreScale(1);
       // Сбрасываем смещение земли (опционально, можно оставить для непрерывной анимации)
       // groundOffsetRef.current = 0;
-      if (duckRef.current) {
-        duckRef.current.reset();
-      }
+      // Пересоздаем утку с текущей конфигурацией персонажа
+      duckRef.current = new Duck(selectedCharacter);
       if (obstacleManagerRef.current) {
         obstacleManagerRef.current.reset();
       }
@@ -1224,7 +1223,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         particleSystemRef.current.clear();
       }
     }
-  }, [gameState]);
+  }, [gameState, selectedCharacter]);
   
   // Функция масштабирования canvas для адаптивности
   const scaleCanvas = useCallback(() => {

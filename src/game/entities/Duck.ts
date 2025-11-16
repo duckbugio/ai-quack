@@ -1,4 +1,4 @@
-import { Position, Velocity, Bounds } from '../../types/game.types';
+import { Position, Velocity, Bounds, CharacterConfig } from '../../types/game.types';
 import {
   GRAVITY,
   JUMP_FORCE,
@@ -23,12 +23,28 @@ export class Duck {
   private cachedBounds: Bounds | null = null;
   private lastPositionX: number = DUCK_START_X;
   private lastPositionY: number = DUCK_START_Y;
+  private colors: { body: string; accent: string; eye: string } = {
+    body: '#FFA500',
+    accent: '#FF8C00',
+    eye: '#000000',
+  };
+  private jumpForceMultiplier = 1;
+  private gravityMultiplier = 1;
 
-  constructor() {
+  constructor(character?: CharacterConfig) {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
     this.velocity = { vx: 0, vy: 0 };
-    this.width = DUCK_WIDTH;
-    this.height = DUCK_HEIGHT;
+    this.width = character?.width ?? DUCK_WIDTH;
+    this.height = character?.height ?? DUCK_HEIGHT;
+    if (character) {
+      this.colors = {
+        body: character.bodyColor,
+        accent: character.accentColor,
+        eye: character.eyeColor,
+      };
+      this.jumpForceMultiplier = character.jumpForceMultiplier;
+      this.gravityMultiplier = character.gravityMultiplier;
+    }
     this.lastPositionX = DUCK_START_X;
     this.lastPositionY = DUCK_START_Y;
   }
@@ -41,7 +57,7 @@ export class Duck {
    */
   update(deltaTime: number, canvasHeight: number): boolean {
     // Применение гравитации (нормализация к 60 FPS)
-    this.velocity.vy += GRAVITY * (deltaTime / 16);
+    this.velocity.vy += (GRAVITY * this.gravityMultiplier) * (deltaTime / 16);
 
     // Ограничение максимальной скорости падения
     if (this.velocity.vy > MAX_FALL_SPEED) {
@@ -89,7 +105,7 @@ export class Duck {
    * Устанавливает вертикальную скорость вверх и меняет состояние крыльев
    */
   jump(): void {
-    this.velocity.vy = JUMP_FORCE;
+    this.velocity.vy = JUMP_FORCE * this.jumpForceMultiplier;
     this.wingState = this.wingState === 'up' ? 'down' : 'up';
   }
 
@@ -115,7 +131,7 @@ export class Duck {
     ctx.rotate(rotationRad);
 
     // Тело утки (эллипс) - теперь относительно центра
-    ctx.fillStyle = '#FFA500';
+    ctx.fillStyle = this.colors.body;
     ctx.beginPath();
     ctx.ellipse(
       0,
@@ -129,7 +145,7 @@ export class Duck {
     ctx.fill();
 
     // Клюв (относительно центра)
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.colors.accent;
     ctx.fillRect(
       this.width / 2 - 10,
       -3,
@@ -139,7 +155,7 @@ export class Duck {
 
     // Крылья (с анимацией) - относительно центра
     const wingOffset = this.wingState === 'up' ? -5 : 5;
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.colors.accent;
     ctx.fillRect(
       -this.width / 2 + 5,
       -5 + wingOffset,
@@ -148,7 +164,7 @@ export class Duck {
     );
 
     // Глаз (относительно центра)
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = this.colors.eye;
     ctx.fillRect(
       this.width / 2 - 15,
       -7,

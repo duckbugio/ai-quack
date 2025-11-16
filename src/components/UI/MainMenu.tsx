@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
-import { GameState } from '../../types/game.types';
+import { GameState, CHARACTERS, CharacterId } from '../../types/game.types';
 import { soundManager } from '../../game/utils/SoundManager';
 import styles from './MainMenu.module.css';
 
@@ -9,8 +9,9 @@ import styles from './MainMenu.module.css';
  * Отображается когда gameState === MENU
  */
 export const MainMenu: React.FC = () => {
-  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState } = useGame();
+  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState, selectedCharacterId, setSelectedCharacterId } = useGame();
   const [fadeIn, setFadeIn] = useState(false);
+  const characterList = useMemo(() => Object.values(CHARACTERS), []);
   
   // Fade-in эффект при появлении меню
   useEffect(() => {
@@ -61,6 +62,37 @@ export const MainMenu: React.FC = () => {
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>
         </div>
       )}
+      <div className={styles.characterSection} aria-label="Выбор персонажа">
+        <h2 className={styles.subtitle}>Выберите персонажа</h2>
+        <div className={styles.characterGrid} role="radiogroup" aria-label="Персонажи">
+          {characterList.map((ch) => (
+            <label key={ch.id} className={`${styles.characterCard} ${selectedCharacterId === ch.id ? styles.characterSelected : ''}`}>
+              <input
+                type="radio"
+                name="character"
+                value={ch.id}
+                checked={selectedCharacterId === ch.id}
+                onChange={() => setSelectedCharacterId(ch.id as CharacterId)}
+                aria-label={ch.name}
+              />
+              <div className={styles.characterPreview}>
+                <div
+                  className={styles.characterAvatar}
+                  style={{
+                    background: ch.bodyColor,
+                    boxShadow: `0 0 0 4px ${selectedCharacterId === ch.id ? '#ffffffaa' : 'transparent'}`,
+                  }}
+                  aria-hidden
+                />
+              </div>
+              <div className={styles.characterInfo}>
+                <div className={styles.characterName}>{ch.name}</div>
+                <div className={styles.characterDesc}>{ch.description}</div>
+              </div>
+            </label>
+          ))}
+        </div>
+      </div>
       <button 
         className={styles.startButton} 
         onClick={startGame}

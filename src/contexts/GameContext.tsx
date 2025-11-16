@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { GameState } from '../types/game.types';
+import { GameState, CharacterId, CHARACTERS, CharacterConfig } from '../types/game.types';
 import { soundManager } from '../game/utils/SoundManager';
 
 /**
@@ -11,6 +11,8 @@ interface GameContextType {
   score: number;
   highScore: number;
   soundEnabled: boolean;
+  selectedCharacterId: CharacterId;
+  selectedCharacter: CharacterConfig;
   startGame: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
@@ -18,6 +20,7 @@ interface GameContextType {
   resetGame: () => void;
   incrementScore: () => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setSelectedCharacterId: (id: CharacterId) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -47,6 +50,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
     return 0;
   });
+  const [selectedCharacterId, setSelectedCharacterIdState] = useState<CharacterId>(() => {
+    try {
+      const saved = localStorage.getItem('duck-game-selected-character');
+      if (saved && Object.values(CharacterId).includes(saved as CharacterId)) {
+        return saved as CharacterId;
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось загрузить выбранного персонажа из localStorage:', error);
+      }
+    }
+    return CharacterId.CLASSIC_DUCK;
+  });
+  const selectedCharacter = CHARACTERS[selectedCharacterId];
   
   const [soundEnabled, setSoundEnabledState] = useState(() => {
     try {
@@ -113,6 +130,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setSelectedCharacterId = (id: CharacterId) => {
+    setSelectedCharacterIdState(id);
+    try {
+      localStorage.setItem('duck-game-selected-character', id);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось сохранить выбранного персонажа в localStorage:', error);
+      }
+    }
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -120,6 +148,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score,
         highScore,
         soundEnabled,
+        selectedCharacterId,
+        selectedCharacter,
         startGame,
         pauseGame,
         resumeGame,
@@ -127,6 +157,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         resetGame,
         incrementScore,
         setSoundEnabled,
+        setSelectedCharacterId,
       }}
     >
       {children}
