@@ -23,6 +23,12 @@ export class Duck {
   private cachedBounds: Bounds | null = null;
   private lastPositionX: number = DUCK_START_X;
   private lastPositionY: number = DUCK_START_Y;
+  private colors: { body: string; beak: string; wing: string; eye: string } = {
+    body: '#FFA500',
+    beak: '#FF8C00',
+    wing: '#FF8C00',
+    eye: '#000',
+  };
 
   constructor() {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
@@ -31,6 +37,24 @@ export class Duck {
     this.height = DUCK_HEIGHT;
     this.lastPositionX = DUCK_START_X;
     this.lastPositionY = DUCK_START_Y;
+  }
+
+  setSkin(id: 'classic' | 'blue' | 'red' | 'green'): void {
+    switch (id) {
+      case 'blue':
+        this.colors = { body: '#4FC3F7', beak: '#FFB300', wing: '#29B6F6', eye: '#000' };
+        break;
+      case 'red':
+        this.colors = { body: '#EF5350', beak: '#FFB300', wing: '#E53935', eye: '#000' };
+        break;
+      case 'green':
+        this.colors = { body: '#66BB6A', beak: '#FFB300', wing: '#43A047', eye: '#000' };
+        break;
+      case 'classic':
+      default:
+        this.colors = { body: '#FFA500', beak: '#FF8C00', wing: '#FF8C00', eye: '#000' };
+        break;
+    }
   }
 
   /**
@@ -115,7 +139,7 @@ export class Duck {
     ctx.rotate(rotationRad);
 
     // Тело утки (эллипс) - теперь относительно центра
-    ctx.fillStyle = '#FFA500';
+    ctx.fillStyle = this.colors.body;
     ctx.beginPath();
     ctx.ellipse(
       0,
@@ -129,7 +153,7 @@ export class Duck {
     ctx.fill();
 
     // Клюв (относительно центра)
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.colors.beak;
     ctx.fillRect(
       this.width / 2 - 10,
       -3,
@@ -139,7 +163,7 @@ export class Duck {
 
     // Крылья (с анимацией) - относительно центра
     const wingOffset = this.wingState === 'up' ? -5 : 5;
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.colors.wing;
     ctx.fillRect(
       -this.width / 2 + 5,
       -5 + wingOffset,
@@ -148,7 +172,7 @@ export class Duck {
     );
 
     // Глаз (относительно центра)
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = this.colors.eye;
     ctx.fillRect(
       this.width / 2 - 15,
       -7,

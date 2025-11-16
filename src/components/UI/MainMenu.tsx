@@ -9,7 +9,7 @@ import styles from './MainMenu.module.css';
  * Отображается когда gameState === MENU
  */
 export const MainMenu: React.FC = () => {
-  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState } = useGame();
+  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState, selectedCharacter, setSelectedCharacter } = useGame();
   const [fadeIn, setFadeIn] = useState(false);
   
   // Fade-in эффект при появлении меню
@@ -49,6 +49,13 @@ export const MainMenu: React.FC = () => {
     }
   };
   
+  const characters: Array<{ id: 'classic' | 'blue' | 'red' | 'green'; label: string; emoji: string }> = [
+    { id: 'classic', label: 'Классика', emoji: '🦆' },
+    { id: 'blue', label: 'Голубая', emoji: '🦆' },
+    { id: 'red', label: 'Красная', emoji: '🦆' },
+    { id: 'green', label: 'Зелёная', emoji: '🦆' },
+  ];
+  
   return (
     <div 
       className={`${styles.menu} ${fadeIn ? styles.fadeIn : ''}`} 
@@ -61,6 +68,23 @@ export const MainMenu: React.FC = () => {
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>
         </div>
       )}
+      <div className={styles.characterSection} aria-label="Выбор персонажа" role="group">
+        <div className={styles.characterTitle}>Выберите персонажа</div>
+        <div className={styles.characterGrid}>
+          {characters.map((c) => (
+            <button
+              key={c.id}
+              className={`${styles.characterCard} ${selectedCharacter === c.id ? styles.characterSelected : ''}`}
+              onClick={() => setSelectedCharacter(c.id)}
+              aria-pressed={selectedCharacter === c.id}
+              aria-label={`Персонаж: ${c.label}`}
+            >
+              <span className={styles.characterEmoji} data-variant={c.id}>{c.emoji}</span>
+              <span className={styles.characterLabel}>{c.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       <button 
         className={styles.startButton} 
         onClick={startGame}

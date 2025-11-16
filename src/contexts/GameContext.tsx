@@ -6,11 +6,14 @@ import { soundManager } from '../game/utils/SoundManager';
  * Интерфейс контекста игры
  * Содержит состояние игры и методы для управления им
  */
+type CharacterId = 'classic' | 'blue' | 'red' | 'green';
+
 interface GameContextType {
   gameState: GameState;
   score: number;
   highScore: number;
   soundEnabled: boolean;
+  selectedCharacter: CharacterId;
   startGame: () => void;
   pauseGame: () => void;
   resumeGame: () => void;
@@ -18,6 +21,7 @@ interface GameContextType {
   resetGame: () => void;
   incrementScore: () => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setSelectedCharacter: (id: CharacterId) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -29,6 +33,19 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [gameState, setGameState] = useState<GameState>(GameState.MENU);
   const [score, setScore] = useState(0);
+  const [selectedCharacter, setSelectedCharacterState] = useState<CharacterId>(() => {
+    try {
+      const saved = localStorage.getItem('duck-game-character');
+      if (saved === 'classic' || saved === 'blue' || saved === 'red' || saved === 'green') {
+        return saved;
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось загрузить выбранного персонажа из localStorage:', error);
+      }
+    }
+    return 'classic';
+  });
   const [highScore, setHighScore] = useState(() => {
     try {
       const saved = localStorage.getItem('duck-game-highscore');
@@ -66,6 +83,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     soundManager.setEnabled(soundEnabled);
   }, [soundEnabled]);
+
+  // Сохранение выбранного персонажа
+  useEffect(() => {
+    try {
+      localStorage.setItem('duck-game-character', selectedCharacter);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось сохранить выбранного персонажа в localStorage:', error);
+      }
+    }
+  }, [selectedCharacter]);
   
   const startGame = () => {
     setGameState(GameState.PLAYING);
@@ -113,6 +141,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setSelectedCharacter = (id: CharacterId) => {
+    setSelectedCharacterState(id);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -120,6 +152,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         score,
         highScore,
         soundEnabled,
+        selectedCharacter,
         startGame,
         pauseGame,
         resumeGame,
@@ -127,6 +160,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         resetGame,
         incrementScore,
         setSoundEnabled,
+        setSelectedCharacter,
       }}
     >
       {children}

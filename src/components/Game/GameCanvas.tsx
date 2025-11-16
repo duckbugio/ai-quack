@@ -39,7 +39,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, selectedCharacter } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -125,6 +125,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   
   // Подключение обработки клавиатуры
   useKeyboard(handleJump);
+
+  // Применяем выбранный скин к утке
+  useEffect(() => {
+    if (duckRef.current) {
+      duckRef.current.setSkin(selectedCharacter);
+    }
+  }, [selectedCharacter]);
   
   // Обработка клавиши Escape для паузы/возобновления игры
   useEffect(() => {
