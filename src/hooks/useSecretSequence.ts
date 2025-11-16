@@ -22,13 +22,27 @@ export const useSecretSequence = (sequence: string[], onActivate: () => void) =>
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore if no sequence configured
+      if (seqRef.current.length === 0) {
+        return;
+      }
+
+      // Ignore auto-repeated keydown events when key is held
+      if (event.repeat) {
+        return;
+      }
+
       const key = (event.key || '').toLowerCase();
       bufferRef.current.push(key);
       // Trim buffer length
       if (bufferRef.current.length > seqRef.current.length) {
         bufferRef.current.shift();
       }
-      // Compare
+      // Compare only when buffer is same length as target sequence
+      if (bufferRef.current.length !== seqRef.current.length) {
+        return;
+      }
+
       const isMatch = seqRef.current.every((v, i) => bufferRef.current[i] === v);
       if (isMatch) {
         onActivateRef.current?.();
