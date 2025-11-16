@@ -1,4 +1,4 @@
-import { Position, Velocity, Bounds } from '../../types/game.types';
+import { Position, Velocity, Bounds, CharacterType } from '../../types/game.types';
 import {
   GRAVITY,
   JUMP_FORCE,
@@ -23,14 +23,41 @@ export class Duck {
   private cachedBounds: Bounds | null = null;
   private lastPositionX: number = DUCK_START_X;
   private lastPositionY: number = DUCK_START_Y;
+  private bodyColor: string;
+  private wingColor: string;
+  private beakColor: string;
 
-  constructor() {
+  constructor(variant: CharacterType = 'classic') {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
     this.velocity = { vx: 0, vy: 0 };
     this.width = DUCK_WIDTH;
     this.height = DUCK_HEIGHT;
     this.lastPositionX = DUCK_START_X;
     this.lastPositionY = DUCK_START_Y;
+    // Устанавливаем цвета в зависимости от выбранного варианта
+    switch (variant) {
+      case 'blue':
+        this.bodyColor = '#1E90FF';
+        this.wingColor = '#00BFFF';
+        this.beakColor = '#FFB347';
+        break;
+      case 'green':
+        this.bodyColor = '#32CD32';
+        this.wingColor = '#228B22';
+        this.beakColor = '#FFB347';
+        break;
+      case 'red':
+        this.bodyColor = '#FF4D4F';
+        this.wingColor = '#DC143C';
+        this.beakColor = '#FFB347';
+        break;
+      case 'classic':
+      default:
+        this.bodyColor = '#FFA500';
+        this.wingColor = '#FF8C00';
+        this.beakColor = '#FF8C00';
+        break;
+    }
   }
 
   /**
@@ -115,7 +142,7 @@ export class Duck {
     ctx.rotate(rotationRad);
 
     // Тело утки (эллипс) - теперь относительно центра
-    ctx.fillStyle = '#FFA500';
+    ctx.fillStyle = this.bodyColor;
     ctx.beginPath();
     ctx.ellipse(
       0,
@@ -129,7 +156,7 @@ export class Duck {
     ctx.fill();
 
     // Клюв (относительно центра)
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.beakColor;
     ctx.fillRect(
       this.width / 2 - 10,
       -3,
@@ -139,7 +166,7 @@ export class Duck {
 
     // Крылья (с анимацией) - относительно центра
     const wingOffset = this.wingState === 'up' ? -5 : 5;
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.wingColor;
     ctx.fillRect(
       -this.width / 2 + 5,
       -5 + wingOffset,

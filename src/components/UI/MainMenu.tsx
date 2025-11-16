@@ -9,7 +9,7 @@ import styles from './MainMenu.module.css';
  * Отображается когда gameState === MENU
  */
 export const MainMenu: React.FC = () => {
-  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState } = useGame();
+  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState, selectedCharacter, setSelectedCharacter } = useGame();
   const [fadeIn, setFadeIn] = useState(false);
   
   // Fade-in эффект при появлении меню
@@ -56,6 +56,44 @@ export const MainMenu: React.FC = () => {
       aria-label="Главное меню игры"
     >
       <h1 className={styles.title}>🦆 Утка</h1>
+      <div className={styles.characterSelect} role="group" aria-label="Выбор персонажа">
+        <button
+          type="button"
+          className={`${styles.characterOption} ${selectedCharacter === 'classic' ? styles.selected : ''}`}
+          onClick={() => setSelectedCharacter('classic')}
+          aria-pressed={selectedCharacter === 'classic'}
+        >
+          <span className={styles.characterSwatch} style={{ background: 'linear-gradient(135deg,#FFA500,#FF8C00)' }} />
+          Классика
+        </button>
+        <button
+          type="button"
+          className={`${styles.characterOption} ${selectedCharacter === 'blue' ? styles.selected : ''}`}
+          onClick={() => setSelectedCharacter('blue')}
+          aria-pressed={selectedCharacter === 'blue'}
+        >
+          <span className={styles.characterSwatch} style={{ background: 'linear-gradient(135deg,#1E90FF,#00BFFF)' }} />
+          Синяя
+        </button>
+        <button
+          type="button"
+          className={`${styles.characterOption} ${selectedCharacter === 'green' ? styles.selected : ''}`}
+          onClick={() => setSelectedCharacter('green')}
+          aria-pressed={selectedCharacter === 'green'}
+        >
+          <span className={styles.characterSwatch} style={{ background: 'linear-gradient(135deg,#32CD32,#228B22)' }} />
+          Зелёная
+        </button>
+        <button
+          type="button"
+          className={`${styles.characterOption} ${selectedCharacter === 'red' ? styles.selected : ''}`}
+          onClick={() => setSelectedCharacter('red')}
+          aria-pressed={selectedCharacter === 'red'}
+        >
+          <span className={styles.characterSwatch} style={{ background: 'linear-gradient(135deg,#FF4D4F,#DC143C)' }} />
+          Красная
+        </button>
+      </div>
       {highScore > 0 && (
         <div className={styles.highScore} aria-live="polite">
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>

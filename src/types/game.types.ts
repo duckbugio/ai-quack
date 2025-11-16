@@ -39,3 +39,13 @@ export interface GameConfig {
   pipeGap: number;
   pipeSpacing: number;
 }
+
+// Типы персонажей (варианты утки)
+export type CharacterType = 'classic' | 'blue' | 'green' | 'red';
+
+// Внешний вид персонажа
+export interface CharacterAppearance {
+  bodyColor: string;
+  wingColor: string;
+  beakColor: string;
+}

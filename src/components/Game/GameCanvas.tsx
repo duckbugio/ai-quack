@@ -86,8 +86,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const flowersRef = useRef<Flower[]>([]);
 
   // Создание экземпляров игровых объектов (только при первом рендере)
+  // Создаем утку с учётом выбранного персонажа (из контекста)
+  const { selectedCharacter } = useGame();
   if (!duckRef.current) {
-    duckRef.current = new Duck();
+    duckRef.current = new Duck(selectedCharacter);
   }
   if (!obstacleManagerRef.current) {
     obstacleManagerRef.current = new ObstacleManager();
@@ -1225,6 +1227,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
   }, [gameState]);
+
+  // Пересоздаём утку при смене выбранного персонажа, пока в меню
+  useEffect(() => {
+    if (gameState === GameState.MENU) {
+      duckRef.current = new Duck(selectedCharacter);
+    }
+  }, [selectedCharacter, gameState]);
   
   // Функция масштабирования canvas для адаптивности
   const scaleCanvas = useCallback(() => {

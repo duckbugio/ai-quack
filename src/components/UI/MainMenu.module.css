@@ -232,6 +232,46 @@
   color: #FF8C00;
 }
 
+/* Выбор персонажа */
+.characterSelect {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.characterOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #333;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.characterOption:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.characterOption.selected {
+  outline: 2px solid #FF8C00;
+  background: rgba(255, 165, 0, 0.12);
+}
+
+.characterSwatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
 /* Адаптивность для планшетов */
 @media (max-width: 1024px) {
   .menu {
@@ -252,6 +292,11 @@
     max-width: 85vw;
     gap: 20px;
     border-radius: 20px;
+  }
+
+  .characterSelect {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
   .title {
@@ -294,6 +339,11 @@
   .menu {
     padding: 28px 20px;
     gap: 16px;
+  }
+
+  .characterSelect {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .title {

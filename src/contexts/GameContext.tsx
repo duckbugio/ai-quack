@@ -18,6 +18,8 @@ interface GameContextType {
   resetGame: () => void;
   incrementScore: () => void;
   setSoundEnabled: (enabled: boolean) => void;
+  selectedCharacter: import('../types/game.types').CharacterType;
+  setSelectedCharacter: (character: import('../types/game.types').CharacterType) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -60,6 +62,20 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     return true; // По умолчанию звуки включены
+  });
+  
+  const [selectedCharacter, setSelectedCharacterState] = useState<import('../types/game.types').CharacterType>(() => {
+    try {
+      const saved = localStorage.getItem('duck-game-character');
+      if (saved === 'classic' || saved === 'blue' || saved === 'green' || saved === 'red') {
+        return saved as import('../types/game.types').CharacterType;
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось загрузить выбранного персонажа из localStorage:', error);
+      }
+    }
+    return 'classic';
   });
   
   // Синхронизация состояния звуков с SoundManager при инициализации и изменении
@@ -113,6 +129,17 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setSelectedCharacter = (character: import('../types/game.types').CharacterType) => {
+    setSelectedCharacterState(character);
+    try {
+      localStorage.setItem('duck-game-character', character);
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Не удалось сохранить выбранного персонажа в localStorage:', error);
+      }
+    }
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -127,6 +154,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         resetGame,
         incrementScore,
         setSoundEnabled,
+        selectedCharacter,
+        setSelectedCharacter,
       }}
     >
       {children}
