@@ -9,6 +9,17 @@ import {
   DUCK_START_Y,
 } from '../utils/constants';
 
+// Палитры для каждого типа персонажа – создаются один раз на уровне модуля
+type DuckPalette = { body: string; beak: string; wing: string; eye?: string };
+const COLORS_BY_CHARACTER: Record<CharacterType, DuckPalette> = {
+  [CharacterType.CLASSIC]: { body: '#FFA500', beak: '#FF8C00', wing: '#FF8C00', eye: '#000' },
+  [CharacterType.BLUE]: { body: '#1E90FF', beak: '#FFB347', wing: '#187bcd', eye: '#001b2e' },
+  [CharacterType.RED]: { body: '#FF4C4C', beak: '#FFB347', wing: '#CC0000', eye: '#1a0000' },
+  [CharacterType.NINJA]: { body: '#2F2F2F', beak: '#F2C14E', wing: '#1E1E1E', eye: '#FFFFFF' },
+  [CharacterType.ORANGE]: { body: '#FF9800', beak: '#FB8C00', wing: '#F57C00', eye: '#000' },
+  [CharacterType.PINK]: { body: '#FF69B4', beak: '#FFB347', wing: '#FF1493', eye: '#000' },
+};
+
 /**
  * Класс, представляющий игрового персонажа - утку
  * Управляет позицией, скоростью, физикой и отрисовкой утки
@@ -116,16 +127,8 @@ export class Duck {
     ctx.translate(centerX, centerY);
     ctx.rotate(rotationRad);
 
-    // Выбор цветовой схемы в зависимости от персонажа
-    const colorsByCharacter: Record<CharacterType, { body: string; beak: string; wing: string; eye?: string }> = {
-      [CharacterType.CLASSIC]: { body: '#FFA500', beak: '#FF8C00', wing: '#FF8C00', eye: '#000' },
-      [CharacterType.BLUE]: { body: '#1E90FF', beak: '#FFB347', wing: '#187bcd', eye: '#001b2e' },
-      [CharacterType.RED]: { body: '#FF4C4C', beak: '#FFB347', wing: '#CC0000', eye: '#1a0000' },
-      [CharacterType.NINJA]: { body: '#2F2F2F', beak: '#F2C14E', wing: '#1E1E1E', eye: '#FFFFFF' },
-      [CharacterType.ORANGE]: { body: '#FF9800', beak: '#FB8C00', wing: '#F57C00', eye: '#000' },
-      [CharacterType.PINK]: { body: '#FF69B4', beak: '#FFB347', wing: '#FF1493', eye: '#000' },
-    };
-    const palette = colorsByCharacter[this.character] ?? colorsByCharacter[CharacterType.CLASSIC];
+    // Выбор цветовой схемы в зависимости от персонажа (без аллокаций на кадр)
+    const palette = COLORS_BY_CHARACTER[this.character] ?? COLORS_BY_CHARACTER[CharacterType.CLASSIC];
 
     // Тело утки (эллипс) - теперь относительно центра
     ctx.fillStyle = palette.body;
