@@ -143,6 +143,18 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     setPartyMode(true);
     soundManager.play('score');
   });
+
+  // Пасхалка: слово "quack" — мгновенно выдает утке солнечные очки
+  useSecretSequence(['q','u','a','c','k'], () => {
+    unlockSunglasses();
+    // Небольшой визуальный эффект рядом с уткой
+    if (particleSystemRef.current && duckRef.current) {
+      const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+      const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+      particleSystemRef.current.emit(centerX, centerY - 10, 12, '#FFD700');
+    }
+    soundManager.play('score');
+  });
   
   // Обработка клавиши Escape для паузы/возобновления игры
   useEffect(() => {
