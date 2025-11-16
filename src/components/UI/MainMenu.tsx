@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
-import { GameState } from '../../types/game.types';
+import { GameState, CharacterId } from '../../types/game.types';
 import { soundManager } from '../../game/utils/SoundManager';
 import styles from './MainMenu.module.css';
 
@@ -9,7 +9,7 @@ import styles from './MainMenu.module.css';
  * Отображается когда gameState === MENU
  */
 export const MainMenu: React.FC = () => {
-  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState } = useGame();
+  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState, selectedCharacter, setSelectedCharacter } = useGame();
   const [fadeIn, setFadeIn] = useState(false);
   
   // Fade-in эффект при появлении меню
@@ -61,6 +61,26 @@ export const MainMenu: React.FC = () => {
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>
         </div>
       )}
+
+      <div className={styles.characterSelect} aria-label="Выбор персонажа">
+        <div className={styles.characterList} role="listbox" aria-activedescendant={`char-${selectedCharacter}`}>
+          {(['classic','blue','red','ninja'] as CharacterId[]).map((id) => (
+            <button
+              key={id}
+              id={`char-${id}`}
+              role="option"
+              aria-selected={selectedCharacter === id}
+              className={`${styles.characterOption} ${selectedCharacter === id ? styles.selected : ''}`}
+              onClick={() => setSelectedCharacter(id)}
+            >
+              <span className={styles.characterPreview} data-char={id} />
+              <span className={styles.characterLabel}>
+                {id === 'classic' ? 'Классика' : id === 'blue' ? 'Синяя' : id === 'red' ? 'Красная' : 'Ниндзя'}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
       <button 
         className={styles.startButton} 
         onClick={startGame}

@@ -1,4 +1,4 @@
-import { Position, Velocity, Bounds } from '../../types/game.types';
+import { Position, Velocity, Bounds, DuckAppearance, CharacterId } from '../../types/game.types';
 import {
   GRAVITY,
   JUMP_FORCE,
@@ -23,14 +23,53 @@ export class Duck {
   private cachedBounds: Bounds | null = null;
   private lastPositionX: number = DUCK_START_X;
   private lastPositionY: number = DUCK_START_Y;
+  private appearance: DuckAppearance;
 
-  constructor() {
+  // Предустановленные скины
+  static APPEARANCES: Record<CharacterId, DuckAppearance> = {
+    classic: {
+      bodyColor: '#FFA500',
+      beakColor: '#FF8C00',
+      wingColor: '#FF8C00',
+      eyeColor: '#000000',
+    },
+    blue: {
+      bodyColor: '#1E90FF',
+      beakColor: '#FFA500',
+      wingColor: '#4682B4',
+      eyeColor: '#001a33',
+    },
+    red: {
+      bodyColor: '#DC143C',
+      beakColor: '#FF8C00',
+      wingColor: '#B22222',
+      eyeColor: '#200000',
+    },
+    ninja: {
+      bodyColor: '#2F4F4F',
+      beakColor: '#A0522D',
+      wingColor: '#000000',
+      eyeColor: '#FFFFFF',
+      widthOverride: DUCK_WIDTH * 0.95,
+      heightOverride: DUCK_HEIGHT * 0.95,
+    },
+  };
+
+  constructor(appearance?: DuckAppearance) {
     this.position = { x: DUCK_START_X, y: DUCK_START_Y };
     this.velocity = { vx: 0, vy: 0 };
-    this.width = DUCK_WIDTH;
-    this.height = DUCK_HEIGHT;
+    this.appearance = appearance ?? Duck.APPEARANCES.classic;
+    this.width = this.appearance.widthOverride ?? DUCK_WIDTH;
+    this.height = this.appearance.heightOverride ?? DUCK_HEIGHT;
     this.lastPositionX = DUCK_START_X;
     this.lastPositionY = DUCK_START_Y;
+  }
+
+  setAppearance(appearance: DuckAppearance): void {
+    this.appearance = appearance;
+    this.width = appearance.widthOverride ?? DUCK_WIDTH;
+    this.height = appearance.heightOverride ?? DUCK_HEIGHT;
+    this.cachedBounds = null;
   }
 
   /**
@@ -115,7 +154,7 @@ export class Duck {
     ctx.rotate(rotationRad);
 
     // Тело утки (эллипс) - теперь относительно центра
-    ctx.fillStyle = '#FFA500';
+    ctx.fillStyle = this.appearance.bodyColor;
     ctx.beginPath();
     ctx.ellipse(
       0,
@@ -129,7 +168,7 @@ export class Duck {
     ctx.fill();
 
     // Клюв (относительно центра)
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.appearance.beakColor;
     ctx.fillRect(
       this.width / 2 - 10,
       -3,
@@ -139,7 +178,7 @@ export class Duck {
 
     // Крылья (с анимацией) - относительно центра
     const wingOffset = this.wingState === 'up' ? -5 : 5;
-    ctx.fillStyle = '#FF8C00';
+    ctx.fillStyle = this.appearance.wingColor;
     ctx.fillRect(
       -this.width / 2 + 5,
       -5 + wingOffset,
@@ -148,7 +187,7 @@ export class Duck {
     );
 
     // Глаз (относительно центра)
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = this.appearance.eyeColor;
     ctx.fillRect(
       this.width / 2 - 15,
       -7,

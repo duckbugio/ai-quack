@@ -39,3 +39,16 @@ export interface GameConfig {
   pipeGap: number;
   pipeSpacing: number;
 }
+
+// Идентификатор персонажа (скина)
+export type CharacterId = 'classic' | 'blue' | 'red' | 'ninja';
+
+// Внешний вид утки/персонажа
+export interface DuckAppearance {
+  bodyColor: string;
+  beakColor: string;
+  wingColor: string;
+  eyeColor: string;
+  widthOverride?: number;
+  heightOverride?: number;
+}

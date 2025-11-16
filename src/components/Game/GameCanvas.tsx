@@ -39,7 +39,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, selectedCharacter } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -87,7 +87,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
-    duckRef.current = new Duck();
+    duckRef.current = new Duck(Duck.APPEARANCES.classic);
   }
   if (!obstacleManagerRef.current) {
     obstacleManagerRef.current = new ObstacleManager();
@@ -103,6 +103,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       soundManager.play('jump');
     }
   }, [gameState]);
+
+  // Применяем выбранный скин к утке при изменении выбора или возврате в меню
+  useEffect(() => {
+    if (duckRef.current) {
+      const appearance = Duck.APPEARANCES[selectedCharacter] ?? Duck.APPEARANCES.classic;
+      duckRef.current.setAppearance(appearance);
+    }
+  }, [selectedCharacter]);
   
   // Обработчик клика по canvas
   const handleCanvasClick = useCallback(() => {
