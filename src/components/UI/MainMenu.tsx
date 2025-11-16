@@ -68,6 +68,15 @@ export const MainMenu: React.FC = () => {
         </button>
         <button
           type="button"
+          className={`${styles.characterOption} ${selectedCharacter === 'orange' ? styles.selected : ''}`}
+          onClick={() => setSelectedCharacter('orange')}
+          aria-pressed={selectedCharacter === 'orange'}
+        >
+          <span className={styles.characterSwatch} style={{ background: 'linear-gradient(135deg,#FFB347,#FF8C00)' }} />
+          Оранжевая
+        </button>
+        <button
+          type="button"
           className={`${styles.characterOption} ${selectedCharacter === 'blue' ? styles.selected : ''}`}
           onClick={() => setSelectedCharacter('blue')}
           aria-pressed={selectedCharacter === 'blue'}

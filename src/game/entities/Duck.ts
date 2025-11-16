@@ -51,6 +51,12 @@ export class Duck {
         this.wingColor = '#DC143C';
         this.beakColor = '#FFB347';
         break;
+      case 'orange':
+        // Оранжевый вариант — насыщенные оттенки
+        this.bodyColor = '#FFA500';
+        this.wingColor = '#FF8C00';
+        this.beakColor = '#FF8C00';
+        break;
       case 'classic':
       default:
         this.bodyColor = '#FFA500';

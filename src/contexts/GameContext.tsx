@@ -67,7 +67,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCharacter, setSelectedCharacterState] = useState<import('../types/game.types').CharacterType>(() => {
     try {
       const saved = localStorage.getItem('duck-game-character');
-      if (saved === 'classic' || saved === 'blue' || saved === 'green' || saved === 'red') {
+      if (saved === 'classic' || saved === 'blue' || saved === 'green' || saved === 'red' || saved === 'orange') {
         return saved as import('../types/game.types').CharacterType;
       }
     } catch (error) {

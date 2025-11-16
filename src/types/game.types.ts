@@ -41,7 +41,7 @@ export interface GameConfig {
 }
 
 // Типы персонажей (варианты утки)
-export type CharacterType = 'classic' | 'blue' | 'green' | 'red';
+export type CharacterType = 'classic' | 'blue' | 'green' | 'red' | 'orange';
 
 // Внешний вид персонажа
 export interface CharacterAppearance {
