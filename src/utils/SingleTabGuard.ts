@@ -32,9 +32,16 @@ export function enforceSingleTab(options?: SingleTabGuardOptions): boolean {
 
   type Lock = { id: string; ts: number };
 
-  const readLock = (): Lock | null => safeParse<Lock>(localStorage.getItem(LOCK_KEY));
-  const writeLock = (lock: Lock): void => localStorage.setItem(LOCK_KEY, JSON.stringify(lock));
-  const clearLock = (): void => localStorage.removeItem(LOCK_KEY);
+  // Guard against environments where localStorage is unavailable or throws
+  const storageUsable = isLocalStorageUsable();
+  if (!storageUsable) {
+    // Fallback: cannot enforce single-tab reliably, allow app to start
+    return true;
+  }
+
+  const readLock = (): Lock | null => safeParse<Lock>(safeLocalStorageGetItem(LOCK_KEY));
+  const writeLock = (lock: Lock): void => safeLocalStorageSetItem(LOCK_KEY, JSON.stringify(lock));
+  const clearLock = (): void => safeLocalStorageRemoveItem(LOCK_KEY);
   const isFresh = (ts: number): boolean => now() - ts < HEARTBEAT_EXPIRY_MS;
 
   const renderBlocked = () => {
@@ -148,4 +155,41 @@ function generateTabId(): string {
     return crypto.randomUUID();
   }
   return `${Math.random().toString(36).slice(2)}_${Date.now()}`;
+}
+
+// ---- Safe localStorage helpers ----
+function isLocalStorageUsable(): boolean {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) return false;
+    const testKey = "__single_tab_guard_test__";
+    window.localStorage.setItem(testKey, "1");
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function safeLocalStorageGetItem(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeLocalStorageSetItem(key: string, value: string): void {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // swallow to avoid crashing on restricted environments
+  }
+}
+
+function safeLocalStorageRemoveItem(key: string): void {
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // swallow
+  }
 }
