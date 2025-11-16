@@ -143,11 +143,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [gameState, pauseGame, resumeGame]);
 
-  // Обновляем персонажа утки при смене выбора в меню
+  // При смене выбранного скина обновляем утку; в меню также сбрасываем позицию, чтобы избежать визуального "телепорта"
   useEffect(() => {
     if (duckRef.current) {
       duckRef.current.setCharacter(selectedCharacter);
-      // Сбрасываем позицию для консистентности при смене скина в меню
       if (gameState === GameState.MENU) {
         duckRef.current.reset();
       }
