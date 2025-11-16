@@ -47,4 +47,5 @@ export enum CharacterType {
   RED = 'red',
   NINJA = 'ninja',
   ORANGE = 'orange',
+  PINK = 'pink',
 }

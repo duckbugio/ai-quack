@@ -123,6 +123,7 @@ export class Duck {
       [CharacterType.RED]: { body: '#FF4C4C', beak: '#FFB347', wing: '#CC0000', eye: '#1a0000' },
       [CharacterType.NINJA]: { body: '#2F2F2F', beak: '#F2C14E', wing: '#1E1E1E', eye: '#FFFFFF' },
       [CharacterType.ORANGE]: { body: '#FF9800', beak: '#FB8C00', wing: '#F57C00', eye: '#000' },
+      [CharacterType.PINK]: { body: '#FF69B4', beak: '#FFB347', wing: '#FF1493', eye: '#000' },
     };
     const palette = colorsByCharacter[this.character] ?? colorsByCharacter[CharacterType.CLASSIC];
 
