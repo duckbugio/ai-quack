@@ -46,4 +46,5 @@ export enum CharacterType {
   BLUE = 'blue',
   RED = 'red',
   NINJA = 'ninja',
+  ORANGE = 'orange',
 }

@@ -71,6 +71,7 @@ export const MainMenu: React.FC = () => {
             { type: CharacterType.BLUE, label: 'Синий', emoji: '🦆', color: '#1E90FF' },
             { type: CharacterType.RED, label: 'Красный', emoji: '🦆', color: '#FF4C4C' },
             { type: CharacterType.NINJA, label: 'Ниндзя', emoji: '🦆', color: '#2F2F2F' },
+            { type: CharacterType.ORANGE, label: 'Оранжевый', emoji: '🦆', color: '#FF9800' },
           ].map((c) => (
             <button
               key={c.type}
