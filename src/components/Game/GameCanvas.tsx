@@ -39,7 +39,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, selectedCharacter } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -87,7 +87,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Создание экземпляров игровых объектов (только при первом рендере)
   if (!duckRef.current) {
-    duckRef.current = new Duck();
+    duckRef.current = new Duck(selectedCharacter);
   }
   if (!obstacleManagerRef.current) {
     obstacleManagerRef.current = new ObstacleManager();
@@ -142,6 +142,16 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [gameState, pauseGame, resumeGame]);
+
+  // При смене выбранного скина обновляем утку; в меню также сбрасываем позицию, чтобы избежать визуального "телепорта"
+  useEffect(() => {
+    if (duckRef.current) {
+      duckRef.current.setCharacter(selectedCharacter);
+      if (gameState === GameState.MENU) {
+        duckRef.current.reset();
+      }
+    }
+  }, [selectedCharacter, gameState]);
   
   // Инициализация декоративных элементов
   useEffect(() => {
@@ -1215,6 +1225,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Сбрасываем смещение земли (опционально, можно оставить для непрерывной анимации)
       // groundOffsetRef.current = 0;
       if (duckRef.current) {
+        duckRef.current.setCharacter(selectedCharacter);
         duckRef.current.reset();
       }
       if (obstacleManagerRef.current) {

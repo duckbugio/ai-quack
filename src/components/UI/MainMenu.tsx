@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
-import { GameState } from '../../types/game.types';
+import { GameState, CharacterType } from '../../types/game.types';
 import { soundManager } from '../../game/utils/SoundManager';
 import styles from './MainMenu.module.css';
 
@@ -9,7 +9,7 @@ import styles from './MainMenu.module.css';
  * Отображается когда gameState === MENU
  */
 export const MainMenu: React.FC = () => {
-  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState } = useGame();
+  const { startGame, highScore, soundEnabled, setSoundEnabled, gameState, selectedCharacter, setSelectedCharacter } = useGame();
   const [fadeIn, setFadeIn] = useState(false);
   
   // Fade-in эффект при появлении меню
@@ -61,6 +61,37 @@ export const MainMenu: React.FC = () => {
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>
         </div>
       )}
+
+      {/* Выбор персонажа */}
+      <div className={styles.characterSection} aria-label="Выбор персонажа">
+        <div className={styles.characterTitle}>Выберите персонажа</div>
+        <div className={styles.characterGrid} role="listbox" aria-activedescendant={`char-${selectedCharacter}`}>
+          {[
+            { type: CharacterType.CLASSIC, label: 'Классика', emoji: '🦆', color: '#FFA500' },
+            { type: CharacterType.BLUE, label: 'Синий', emoji: '🦆', color: '#1E90FF' },
+            { type: CharacterType.RED, label: 'Красный', emoji: '🦆', color: '#FF4C4C' },
+            { type: CharacterType.NINJA, label: 'Ниндзя', emoji: '🦆', color: '#2F2F2F' },
+            { type: CharacterType.ORANGE, label: 'Оранжевый', emoji: '🦆', color: '#FF9800' },
+            { type: CharacterType.PINK, label: 'Розовый', emoji: '🦆', color: '#FF69B4' },
+          ].map((c) => (
+            <button
+              key={c.type}
+              id={`char-${c.type}`}
+              className={`${styles.characterCard} ${selectedCharacter === c.type ? styles.characterCardSelected : ''}`}
+              onClick={() => setSelectedCharacter(c.type)}
+              aria-selected={selectedCharacter === c.type}
+              role="option"
+              style={{
+                // Цветовая индикация карточки
+                ['--char-color' as any]: c.color,
+              }}
+            >
+              <span className={styles.characterEmoji} aria-hidden="true">{c.emoji}</span>
+              <span className={styles.characterLabel}>{c.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       <button 
         className={styles.startButton} 
         onClick={startGame}
