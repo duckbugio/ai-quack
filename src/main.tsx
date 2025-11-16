@@ -31,7 +31,16 @@ if (singleTabAllowed) {
   });
 
   // Проверка совместимости браузера (только в dev режиме или если включен флаг)
-  if (import.meta.env.DEV || localStorage.getItem('duck-game-show-compatibility') === 'true') {
+  const shouldShowCompatibility = (() => {
+    if (import.meta.env.DEV) return true;
+    try {
+      return localStorage.getItem('duck-game-show-compatibility') === 'true';
+    } catch {
+      return false;
+    }
+  })();
+
+  if (shouldShowCompatibility) {
     logCompatibilityReport();
   }
 
