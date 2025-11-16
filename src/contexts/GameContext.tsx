@@ -6,7 +6,7 @@ import { soundManager } from '../game/utils/SoundManager';
  * Интерфейс контекста игры
  * Содержит состояние игры и методы для управления им
  */
-type CharacterId = 'classic' | 'blue' | 'red' | 'green';
+type CharacterId = 'classic' | 'blue' | 'red' | 'green' | 'orange';
 
 interface GameContextType {
   gameState: GameState;
@@ -36,7 +36,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCharacter, setSelectedCharacterState] = useState<CharacterId>(() => {
     try {
       const saved = localStorage.getItem('duck-game-character');
-      if (saved === 'classic' || saved === 'blue' || saved === 'red' || saved === 'green') {
+      if (saved === 'classic' || saved === 'blue' || saved === 'red' || saved === 'green' || saved === 'orange') {
         return saved;
       }
     } catch (error) {

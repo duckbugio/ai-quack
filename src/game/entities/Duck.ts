@@ -39,7 +39,7 @@ export class Duck {
     this.lastPositionY = DUCK_START_Y;
   }
 
-  setSkin(id: 'classic' | 'blue' | 'red' | 'green'): void {
+  setSkin(id: 'classic' | 'blue' | 'red' | 'green' | 'orange'): void {
     switch (id) {
       case 'blue':
         this.colors = { body: '#4FC3F7', beak: '#FFB300', wing: '#29B6F6', eye: '#000' };
@@ -49,6 +49,9 @@ export class Duck {
         break;
       case 'green':
         this.colors = { body: '#66BB6A', beak: '#FFB300', wing: '#43A047', eye: '#000' };
+        break;
+      case 'orange':
+        this.colors = { body: '#FFA500', beak: '#FF8C00', wing: '#FF8C00', eye: '#000' };
         break;
       case 'classic':
       default:

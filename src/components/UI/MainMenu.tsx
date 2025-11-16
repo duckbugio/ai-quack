@@ -49,8 +49,9 @@ export const MainMenu: React.FC = () => {
     }
   };
   
-  const characters: Array<{ id: 'classic' | 'blue' | 'red' | 'green'; label: string; emoji: string }> = [
+  const characters: Array<{ id: 'classic' | 'blue' | 'red' | 'green' | 'orange'; label: string; emoji: string }> = [
     { id: 'classic', label: 'Классика', emoji: '🦆' },
+    { id: 'orange', label: 'Оранжевая', emoji: '🦆' },
     { id: 'blue', label: 'Голубая', emoji: '🦆' },
     { id: 'red', label: 'Красная', emoji: '🦆' },
     { id: 'green', label: 'Зелёная', emoji: '🦆' },
