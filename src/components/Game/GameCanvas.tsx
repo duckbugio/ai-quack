@@ -1093,21 +1093,21 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Отрисовка утки (поверх всего)
       duck.draw(ctx);
 
-      // Пасхалка: солнцезащитные очки у утки
+      // Easter egg: sunglasses on the duck
       if (easterEggs.sunglassesUnlocked || easterEggs.partyMode) {
         ctx.save();
         const centerX = duck.position.x + duck.width / 2;
         const centerY = duck.position.y + duck.height / 2;
         ctx.translate(centerX, centerY);
-        // Смещаем к "глазам" относительно центра утки
+        // Offset towards the "eyes" relative to the duck center
         ctx.translate(duck.width / 2 - 15, -5);
         ctx.fillStyle = '#000000';
-        // Линзы
+        // Lenses
         ctx.fillRect(-6, -3, 6, 6);
         ctx.fillRect(2, -3, 6, 6);
-        // Перемычка
+        // Bridge
         ctx.fillRect(0, -1, 2, 2);
-        // Дужка
+        // Temple (arm)
         ctx.fillRect(8, -1, 6, 2);
         ctx.restore();
       }
@@ -1198,7 +1198,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     }
   }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround, drawTrees, drawFlowers, drawBirds, easterEggs.sunglassesUnlocked, easterEggs.partyMode]);
   
-  // Разблокировка очков при достижении 42
+  // Unlock sunglasses when the score reaches 42
   useEffect(() => {
     if (gameState === GameState.PLAYING && score >= 42 && !easterEggs.sunglassesUnlocked) {
       unlockSunglasses();
