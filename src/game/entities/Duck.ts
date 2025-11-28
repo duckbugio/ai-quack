@@ -37,15 +37,23 @@ export class Duck {
    * Обновляет позицию утки с учетом гравитации и границ экрана
    * @param deltaTime - Время, прошедшее с последнего кадра (в миллисекундах)
    * @param canvasHeight - Высота canvas для проверки границ
+   * @param reverseGravity - Обратная гравитация (по умолчанию false)
    * @returns true если утка достигла границы экрана (игра окончена)
    */
-  update(deltaTime: number, canvasHeight: number): boolean {
+  update(deltaTime: number, canvasHeight: number, reverseGravity: boolean = false): boolean {
     // Применение гравитации (нормализация к 60 FPS)
-    this.velocity.vy += GRAVITY * (deltaTime / 16);
+    const gravity = reverseGravity ? -GRAVITY : GRAVITY;
+    this.velocity.vy += gravity * (deltaTime / 16);
 
-    // Ограничение максимальной скорости падения
-    if (this.velocity.vy > MAX_FALL_SPEED) {
-      this.velocity.vy = MAX_FALL_SPEED;
+    // Ограничение максимальной скорости падения/подъема
+    if (reverseGravity) {
+      if (this.velocity.vy < -MAX_FALL_SPEED) {
+        this.velocity.vy = -MAX_FALL_SPEED;
+      }
+    } else {
+      if (this.velocity.vy > MAX_FALL_SPEED) {
+        this.velocity.vy = MAX_FALL_SPEED;
+      }
     }
 
     // Обновление позиции

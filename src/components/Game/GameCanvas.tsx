@@ -40,7 +40,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, easterEggs, setPartyMode, unlockSunglasses, setRainbowMode, setSlowmoMode, setGodMode, setInvertColors, setMatrixMode, setNightMode, setSpeedMode, setBigDuck, setTinyDuck, setFlipMode } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, easterEggs, setPartyMode, unlockSunglasses, setRainbowMode, setSlowmoMode, setGodMode, setInvertColors, setMatrixMode, setNightMode, setSpeedMode, setBigDuck, setTinyDuck, setFlipMode, setDoubleJump, setReverseGravity, setChaosMode, setZenMode, setGlowMode, setNinjaMode, setShuffleMode, setBounceMode } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -54,6 +54,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   const [scoreScale, setScoreScale] = useState(1);
   // Таймер для party mode конфетти
   const partyTimerRef = useRef<number>(0);
+  
+  // Состояние для двойного прыжка
+  const doubleJumpUsedRef = useRef<boolean>(false);
+  const lastJumpTimeRef = useRef<number>(0);
   
   // Состояние для движения облаков
   const cloudOffsetRef = useRef<number>(0);
@@ -102,10 +106,26 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Обработчик прыжка утки
   const handleJump = useCallback(() => {
     if (gameState === GameState.PLAYING && duckRef.current) {
-      duckRef.current.jump();
-      soundManager.play('jump');
+      const now = Date.now();
+      const timeSinceLastJump = now - lastJumpTimeRef.current;
+      
+      if (easterEggs.doubleJump && timeSinceLastJump < 300 && !doubleJumpUsedRef.current) {
+        doubleJumpUsedRef.current = true;
+        duckRef.current.jump();
+        soundManager.play('jump');
+        if (particleSystemRef.current && duckRef.current) {
+          const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+          const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+          particleSystemRef.current.emit(centerX, centerY, 8, '#00FFFF');
+        }
+      } else if (!easterEggs.doubleJump || !doubleJumpUsedRef.current) {
+        duckRef.current.jump();
+        soundManager.play('jump');
+        doubleJumpUsedRef.current = easterEggs.doubleJump;
+        lastJumpTimeRef.current = now;
+      }
     }
-  }, [gameState]);
+  }, [gameState, easterEggs.doubleJump]);
   
   // Обработчик клика по canvas
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -358,6 +378,74 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     setFlipMode(!easterEggs.flipMode);
     soundManager.play('score');
   });
+
+  // Пасхалка: слово "doublejump" - включает двойной прыжок
+  useSecretSequence(['d','o','u','b','l','e','j','u','m','p'], () => {
+    setDoubleJump(!easterEggs.doubleJump);
+    doubleJumpUsedRef.current = false;
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "gravity" - обратная гравитация
+  useSecretSequence(['g','r','a','v','i','t','y'], () => {
+    setReverseGravity(!easterEggs.reverseGravity);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "chaos" - включает хаос режим
+  useSecretSequence(['c','h','a','o','s'], () => {
+    const newChaos = !easterEggs.chaosMode;
+    setChaosMode(newChaos);
+    if (newChaos) {
+      setRainbowMode(true);
+      setMatrixMode(true);
+      setSpeedMode(true);
+      setGlowMode(true);
+      if (particleSystemRef.current && duckRef.current) {
+        const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+        const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+        particleSystemRef.current.emit(centerX, centerY, 30, '#FF00FF');
+      }
+    }
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "zen" - спокойный режим
+  useSecretSequence(['z','e','n'], () => {
+    const newZen = !easterEggs.zenMode;
+    setZenMode(newZen);
+    if (newZen) {
+      setSlowmoMode(true);
+      setRainbowMode(true);
+    } else {
+      setSlowmoMode(false);
+    }
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "glow" - свечение утки
+  useSecretSequence(['g','l','o','w'], () => {
+    setGlowMode(!easterEggs.glowMode);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "ninja" - невидимость препятствий
+  useSecretSequence(['n','i','n','j','a'], () => {
+    setNinjaMode(!easterEggs.ninjaMode);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "shuffle" - перемешивание цветов
+  useSecretSequence(['s','h','u','f','f','l','e'], () => {
+    setShuffleMode(!easterEggs.shuffleMode);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "bounce" - отскок от границ
+  useSecretSequence(['b','o','u','n','c','e'], () => {
+    setBounceMode(!easterEggs.bounceMode);
+    soundManager.play('score');
+  });
   
   // Обработка клавиши Escape для паузы/возобновления игры
   useEffect(() => {
@@ -556,12 +644,12 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Игровой цикл: обновление состояния
   const update = useCallback(
     (deltaTime: number) => {
-      // Применяем slowmo и speed эффекты
+      // Применяем slowmo, speed и zen эффекты
       let effectiveDeltaTime = deltaTime;
-      if (easterEggs.slowmoMode) {
+      if (easterEggs.zenMode || easterEggs.slowmoMode) {
         effectiveDeltaTime *= 0.5;
       }
-      if (easterEggs.speedMode) {
+      if (easterEggs.speedMode && !easterEggs.zenMode) {
         effectiveDeltaTime *= 1.5;
       }
       
@@ -594,9 +682,36 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const duck = duckRef.current;
       const obstacleManager = obstacleManagerRef.current;
       
+      // Сброс двойного прыжка при касании земли или потолка
+      const isOnGround = duck.position.y + duck.height >= height - 5;
+      const isOnCeiling = duck.position.y <= 5;
+      if (isOnGround || isOnCeiling) {
+        doubleJumpUsedRef.current = false;
+      }
+      
       // Обновление утки (включает проверку границ)
-      const hitBoundary = duck.update(effectiveDeltaTime, height);
-      if (hitBoundary && !easterEggs.godMode) {
+      let hitBoundary = duck.update(effectiveDeltaTime, height, easterEggs.reverseGravity);
+      
+      // Bounce mode - отскок от границ
+      if (easterEggs.bounceMode && hitBoundary) {
+        hitBoundary = false;
+        if (duck.position.y <= 0) {
+          duck.position.y = 5;
+          duck.velocity.vy = Math.abs(duck.velocity.vy) * 0.7;
+          if (particleSystemRef.current) {
+            particleSystemRef.current.emit(duck.position.x + duck.width / 2, 0, 10, '#00FFFF');
+          }
+        } else if (duck.position.y + duck.height >= height) {
+          duck.position.y = height - duck.height - 5;
+          duck.velocity.vy = -Math.abs(duck.velocity.vy) * 0.7;
+          if (particleSystemRef.current) {
+            particleSystemRef.current.emit(duck.position.x + duck.width / 2, height, 10, '#00FFFF');
+          }
+        }
+        doubleJumpUsedRef.current = false;
+      }
+      
+      if (hitBoundary && !easterEggs.godMode && !easterEggs.bounceMode) {
         gameOverCalledRef.current = true;
         if (particleSystemRef.current) {
           const centerX = duck.position.x + duck.width / 2;
@@ -633,7 +748,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     },
-    [gameState, height, score, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds, emitPartyModeConfetti, easterEggs.slowmoMode, easterEggs.speedMode, easterEggs.godMode]
+    [gameState, height, score, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds, emitPartyModeConfetti, easterEggs.slowmoMode, easterEggs.speedMode, easterEggs.godMode, easterEggs.zenMode, easterEggs.reverseGravity, easterEggs.bounceMode]
   );
 
   // Анимация счета при изменении
@@ -1361,8 +1476,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const duck = duckRef.current;
       const obstacleManager = obstacleManagerRef.current;
       
-      // Отрисовка препятствий
-      obstacleManager.draw(ctx);
+      // Отрисовка препятствий (с учетом ninja mode)
+      if (!easterEggs.ninjaMode) {
+        obstacleManager.draw(ctx);
+      }
 
       // Отрисовка утки (поверх всего) с изменением размера
       ctx.save();
@@ -1489,8 +1606,129 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         ctx.restore();
       }
 
+      // Индикатор double jump
+      if (easterEggs.doubleJump) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#00FFFF';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const doubleJumpText = 'DOUBLE JUMP';
+        ctx.strokeText(doubleJumpText, 20, height - 190);
+        ctx.fillText(doubleJumpText, 20, height - 190);
+        ctx.restore();
+      }
+
+      // Индикатор reverse gravity
+      if (easterEggs.reverseGravity) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#FF00FF';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const gravityText = 'REVERSE GRAVITY';
+        ctx.strokeText(gravityText, 20, height - 220);
+        ctx.fillText(gravityText, 20, height - 220);
+        ctx.restore();
+      }
+
+      // Индикатор chaos mode
+      if (easterEggs.chaosMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#FF0000';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const chaosText = 'CHAOS';
+        ctx.strokeText(chaosText, 20, height - 250);
+        ctx.fillText(chaosText, 20, height - 250);
+        ctx.restore();
+      }
+
+      // Индикатор zen mode
+      if (easterEggs.zenMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#00FF00';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const zenText = 'ZEN';
+        ctx.strokeText(zenText, 20, height - 280);
+        ctx.fillText(zenText, 20, height - 280);
+        ctx.restore();
+      }
+
+      // Индикатор glow mode
+      if (easterEggs.glowMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#FFFF00';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const glowText = 'GLOW';
+        ctx.strokeText(glowText, 20, height - 310);
+        ctx.fillText(glowText, 20, height - 310);
+        ctx.restore();
+      }
+
+      // Индикатор ninja mode
+      if (easterEggs.ninjaMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#808080';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const ninjaText = 'NINJA';
+        ctx.strokeText(ninjaText, 20, height - 340);
+        ctx.fillText(ninjaText, 20, height - 340);
+        ctx.restore();
+      }
+
+      // Индикатор bounce mode
+      if (easterEggs.bounceMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#00FF00';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const bounceText = 'BOUNCE';
+        ctx.strokeText(bounceText, 20, height - 370);
+        ctx.fillText(bounceText, 20, height - 370);
+        ctx.restore();
+      }
+
+      // Glow эффект для утки
+      if (easterEggs.glowMode && duckRef.current) {
+        ctx.save();
+        const duck = duckRef.current;
+        const centerX = duck.position.x + duck.width / 2;
+        const centerY = duck.position.y + duck.height / 2;
+        const glowHue = (Date.now() / 30) % 360;
+        const glowGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, duck.width * 2);
+        glowGradient.addColorStop(0, getRainbowColor(glowHue));
+        glowGradient.addColorStop(0.5, getRainbowColor((glowHue + 60) % 360));
+        glowGradient.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGradient;
+        ctx.fillRect(centerX - duck.width * 2, centerY - duck.height * 2, duck.width * 4, duck.height * 4);
+        ctx.restore();
+      }
+
       // Радужный эффект для утки
-      if (easterEggs.rainbowMode && duckRef.current) {
+      if (easterEggs.rainbowMode && duckRef.current && !easterEggs.glowMode) {
         ctx.save();
         const duck = duckRef.current;
         const centerX = duck.position.x + duck.width / 2;
@@ -1611,6 +1849,23 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ctx.restore();
     }
 
+    // Применяем shuffle mode - перемешивание цветов
+    if (easterEggs.shuffleMode) {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+      const time = Date.now();
+      for (let i = 0; i < data.length; i += 4) {
+        const offset = Math.sin(time / 100 + i / 1000) * 50;
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        data[i] = Math.max(0, Math.min(255, g + offset));
+        data[i + 1] = Math.max(0, Math.min(255, b + offset));
+        data[i + 2] = Math.max(0, Math.min(255, r + offset));
+      }
+      ctx.putImageData(imageData, 0, 0);
+    }
+
     // Применяем инверсию цветов если включена (в конце всей отрисовки)
     if (easterEggs.invertColors) {
       const imageData = ctx.getImageData(0, 0, width, height);
@@ -1622,7 +1877,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
       ctx.putImageData(imageData, 0, 0);
     }
-    }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround, drawTrees, drawFlowers, drawBirds, easterEggs.sunglassesUnlocked, easterEggs.partyMode, easterEggs.rainbowMode, easterEggs.invertColors, easterEggs.godMode, easterEggs.slowmoMode, easterEggs.matrixMode, easterEggs.flipMode, easterEggs.bigDuck, easterEggs.tinyDuck, getRainbowColor]);
+    }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround, drawTrees, drawFlowers, drawBirds, easterEggs.sunglassesUnlocked, easterEggs.partyMode, easterEggs.rainbowMode, easterEggs.invertColors, easterEggs.godMode, easterEggs.slowmoMode, easterEggs.matrixMode, easterEggs.flipMode, easterEggs.bigDuck, easterEggs.tinyDuck, easterEggs.glowMode, easterEggs.ninjaMode, easterEggs.shuffleMode, getRainbowColor]);
   
   // Unlock sunglasses when the score reaches 42
   useEffect(() => {
@@ -1750,6 +2005,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       if (particleSystemRef.current) {
         particleSystemRef.current.clear();
       }
+      doubleJumpUsedRef.current = false;
+      lastJumpTimeRef.current = 0;
     }
   }, [gameState]);
   

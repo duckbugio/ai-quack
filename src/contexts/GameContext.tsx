@@ -24,6 +24,14 @@ interface GameContextType {
     bigDuck: boolean;
     tinyDuck: boolean;
     flipMode: boolean;
+    doubleJump: boolean;
+    reverseGravity: boolean;
+    chaosMode: boolean;
+    zenMode: boolean;
+    glowMode: boolean;
+    ninjaMode: boolean;
+    shuffleMode: boolean;
+    bounceMode: boolean;
   };
   startGame: () => void;
   pauseGame: () => void;
@@ -44,6 +52,14 @@ interface GameContextType {
   setBigDuck: (enabled: boolean) => void;
   setTinyDuck: (enabled: boolean) => void;
   setFlipMode: (enabled: boolean) => void;
+  setDoubleJump: (enabled: boolean) => void;
+  setReverseGravity: (enabled: boolean) => void;
+  setChaosMode: (enabled: boolean) => void;
+  setZenMode: (enabled: boolean) => void;
+  setGlowMode: (enabled: boolean) => void;
+  setNinjaMode: (enabled: boolean) => void;
+  setShuffleMode: (enabled: boolean) => void;
+  setBounceMode: (enabled: boolean) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -67,6 +83,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [bigDuck, setBigDuckState] = useState<boolean>(false);
   const [tinyDuck, setTinyDuckState] = useState<boolean>(false);
   const [flipMode, setFlipModeState] = useState<boolean>(false);
+  const [doubleJump, setDoubleJumpState] = useState<boolean>(false);
+  const [reverseGravity, setReverseGravityState] = useState<boolean>(false);
+  const [chaosMode, setChaosModeState] = useState<boolean>(false);
+  const [zenMode, setZenModeState] = useState<boolean>(false);
+  const [glowMode, setGlowModeState] = useState<boolean>(false);
+  const [ninjaMode, setNinjaModeState] = useState<boolean>(false);
+  const [shuffleMode, setShuffleModeState] = useState<boolean>(false);
+  const [bounceMode, setBounceModeState] = useState<boolean>(false);
   const [highScore, setHighScore] = useState(() => {
     try {
       const saved = localStorage.getItem('duck-game-highscore');
@@ -146,6 +170,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setBigDuckState(false);
     setTinyDuckState(false);
     setFlipModeState(false);
+    setDoubleJumpState(false);
+    setReverseGravityState(false);
+    setChaosModeState(false);
+    setZenModeState(false);
+    setGlowModeState(false);
+    setNinjaModeState(false);
+    setShuffleModeState(false);
+    setBounceModeState(false);
   };
 
   const incrementScore = () => setScore((prev) => prev + 1);
@@ -210,6 +242,38 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setFlipModeState(enabled);
   };
 
+  const setDoubleJump = (enabled: boolean) => {
+    setDoubleJumpState(enabled);
+  };
+
+  const setReverseGravity = (enabled: boolean) => {
+    setReverseGravityState(enabled);
+  };
+
+  const setChaosMode = (enabled: boolean) => {
+    setChaosModeState(enabled);
+  };
+
+  const setZenMode = (enabled: boolean) => {
+    setZenModeState(enabled);
+  };
+
+  const setGlowMode = (enabled: boolean) => {
+    setGlowModeState(enabled);
+  };
+
+  const setNinjaMode = (enabled: boolean) => {
+    setNinjaModeState(enabled);
+  };
+
+  const setShuffleMode = (enabled: boolean) => {
+    setShuffleModeState(enabled);
+  };
+
+  const setBounceMode = (enabled: boolean) => {
+    setBounceModeState(enabled);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -230,6 +294,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           bigDuck,
           tinyDuck,
           flipMode,
+          doubleJump,
+          reverseGravity,
+          chaosMode,
+          zenMode,
+          glowMode,
+          ninjaMode,
+          shuffleMode,
+          bounceMode,
         },
         startGame,
         pauseGame,
@@ -250,6 +322,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setBigDuck,
         setTinyDuck,
         setFlipMode,
+        setDoubleJump,
+        setReverseGravity,
+        setChaosMode,
+        setZenMode,
+        setGlowMode,
+        setNinjaMode,
+        setShuffleMode,
+        setBounceMode,
       }}
     >
       {children}
