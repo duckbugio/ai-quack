@@ -32,6 +32,13 @@ interface GameContextType {
     ninjaMode: boolean;
     shuffleMode: boolean;
     bounceMode: boolean;
+    wingsMode: boolean;
+    teleportMode: boolean;
+    mirrorMode: boolean;
+    pixelMode: boolean;
+    retroMode: boolean;
+    spaceMode: boolean;
+    waterMode: boolean;
   };
   startGame: () => void;
   pauseGame: () => void;
@@ -60,6 +67,13 @@ interface GameContextType {
   setNinjaMode: (enabled: boolean) => void;
   setShuffleMode: (enabled: boolean) => void;
   setBounceMode: (enabled: boolean) => void;
+  setWingsMode: (enabled: boolean) => void;
+  setTeleportMode: (enabled: boolean) => void;
+  setMirrorMode: (enabled: boolean) => void;
+  setPixelMode: (enabled: boolean) => void;
+  setRetroMode: (enabled: boolean) => void;
+  setSpaceMode: (enabled: boolean) => void;
+  setWaterMode: (enabled: boolean) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -91,6 +105,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [ninjaMode, setNinjaModeState] = useState<boolean>(false);
   const [shuffleMode, setShuffleModeState] = useState<boolean>(false);
   const [bounceMode, setBounceModeState] = useState<boolean>(false);
+  const [wingsMode, setWingsModeState] = useState<boolean>(false);
+  const [teleportMode, setTeleportModeState] = useState<boolean>(false);
+  const [mirrorMode, setMirrorModeState] = useState<boolean>(false);
+  const [pixelMode, setPixelModeState] = useState<boolean>(false);
+  const [retroMode, setRetroModeState] = useState<boolean>(false);
+  const [spaceMode, setSpaceModeState] = useState<boolean>(false);
+  const [waterMode, setWaterModeState] = useState<boolean>(false);
   const [highScore, setHighScore] = useState(() => {
     try {
       const saved = localStorage.getItem('duck-game-highscore');
@@ -178,6 +199,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setNinjaModeState(false);
     setShuffleModeState(false);
     setBounceModeState(false);
+    setWingsModeState(false);
+    setTeleportModeState(false);
+    setMirrorModeState(false);
+    setPixelModeState(false);
+    setRetroModeState(false);
+    setSpaceModeState(false);
+    setWaterModeState(false);
   };
 
   const incrementScore = () => setScore((prev) => prev + 1);
@@ -274,6 +302,34 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setBounceModeState(enabled);
   };
 
+  const setWingsMode = (enabled: boolean) => {
+    setWingsModeState(enabled);
+  };
+
+  const setTeleportMode = (enabled: boolean) => {
+    setTeleportModeState(enabled);
+  };
+
+  const setMirrorMode = (enabled: boolean) => {
+    setMirrorModeState(enabled);
+  };
+
+  const setPixelMode = (enabled: boolean) => {
+    setPixelModeState(enabled);
+  };
+
+  const setRetroMode = (enabled: boolean) => {
+    setRetroModeState(enabled);
+  };
+
+  const setSpaceMode = (enabled: boolean) => {
+    setSpaceModeState(enabled);
+  };
+
+  const setWaterMode = (enabled: boolean) => {
+    setWaterModeState(enabled);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -302,6 +358,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           ninjaMode,
           shuffleMode,
           bounceMode,
+          wingsMode,
+          teleportMode,
+          mirrorMode,
+          pixelMode,
+          retroMode,
+          spaceMode,
+          waterMode,
         },
         startGame,
         pauseGame,
@@ -330,6 +393,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setNinjaMode,
         setShuffleMode,
         setBounceMode,
+        setWingsMode,
+        setTeleportMode,
+        setMirrorMode,
+        setPixelMode,
+        setRetroMode,
+        setSpaceMode,
+        setWaterMode,
       }}
     >
       {children}
