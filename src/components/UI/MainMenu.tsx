@@ -49,13 +49,18 @@ export const MainMenu: React.FC = () => {
     }
   };
   
+  const handleTitleClick = () => {
+    setSoundEnabled(true);
+    soundManager.play('score');
+  };
+
   return (
     <div 
       className={`${styles.menu} ${fadeIn ? styles.fadeIn : ''}`} 
       role="dialog" 
       aria-label="Главное меню игры"
     >
-      <h1 className={styles.title}>🦆 Утка</h1>
+      <h1 className={styles.title} onClick={handleTitleClick} style={{ cursor: 'pointer' }}>🦆 Утка</h1>
       {highScore > 0 && (
         <div className={styles.highScore} aria-live="polite">
           Лучший результат: <span className={styles.highScoreValue}>{highScore}</span>
