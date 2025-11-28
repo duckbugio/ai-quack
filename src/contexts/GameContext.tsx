@@ -14,6 +14,10 @@ interface GameContextType {
   easterEggs: {
     partyMode: boolean;
     sunglassesUnlocked: boolean;
+    rainbowMode: boolean;
+    slowmoMode: boolean;
+    godMode: boolean;
+    invertColors: boolean;
   };
   startGame: () => void;
   pauseGame: () => void;
@@ -24,6 +28,10 @@ interface GameContextType {
   setSoundEnabled: (enabled: boolean) => void;
   setPartyMode: (enabled: boolean) => void;
   unlockSunglasses: () => void;
+  setRainbowMode: (enabled: boolean) => void;
+  setSlowmoMode: (enabled: boolean) => void;
+  setGodMode: (enabled: boolean) => void;
+  setInvertColors: (enabled: boolean) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -37,6 +45,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [score, setScore] = useState(0);
   const [partyMode, setPartyModeState] = useState<boolean>(false);
   const [sunglassesUnlocked, setSunglassesUnlocked] = useState<boolean>(false);
+  const [rainbowMode, setRainbowModeState] = useState<boolean>(false);
+  const [slowmoMode, setSlowmoModeState] = useState<boolean>(false);
+  const [godMode, setGodModeState] = useState<boolean>(false);
+  const [invertColors, setInvertColorsState] = useState<boolean>(false);
   const [highScore, setHighScore] = useState(() => {
     try {
       const saved = localStorage.getItem('duck-game-highscore');
@@ -105,8 +117,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const resetGame = () => {
     setGameState(GameState.MENU);
     setScore(0);
-    // Reset session-only easter eggs
     setSunglassesUnlocked(false);
+    setRainbowModeState(false);
+    setSlowmoModeState(false);
+    setGodModeState(false);
+    setInvertColorsState(false);
   };
 
   const incrementScore = () => setScore((prev) => prev + 1);
@@ -131,6 +146,22 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setSunglassesUnlocked(true);
   };
 
+  const setRainbowMode = (enabled: boolean) => {
+    setRainbowModeState(enabled);
+  };
+
+  const setSlowmoMode = (enabled: boolean) => {
+    setSlowmoModeState(enabled);
+  };
+
+  const setGodMode = (enabled: boolean) => {
+    setGodModeState(enabled);
+  };
+
+  const setInvertColors = (enabled: boolean) => {
+    setInvertColorsState(enabled);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -141,6 +172,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         easterEggs: {
           partyMode,
           sunglassesUnlocked,
+          rainbowMode,
+          slowmoMode,
+          godMode,
+          invertColors,
         },
         startGame,
         pauseGame,
@@ -151,6 +186,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setSoundEnabled,
         setPartyMode,
         unlockSunglasses,
+        setRainbowMode,
+        setSlowmoMode,
+        setGodMode,
+        setInvertColors,
       }}
     >
       {children}
