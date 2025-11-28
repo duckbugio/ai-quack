@@ -190,10 +190,45 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             }
           }
         }
+
+        // Пасхалка: клик по птицам
+        const birds = birdsRef.current;
+        for (const bird of birds) {
+          if (bird.x > -50 && bird.x < width + 50) {
+            const distance = Math.sqrt(Math.pow(canvasX - bird.x, 2) + Math.pow(canvasY - bird.y, 2));
+            if (distance < bird.size * 3) {
+              setGlowMode(!easterEggs.glowMode);
+              if (particleSystemRef.current) {
+                particleSystemRef.current.emit(bird.x, bird.y, 15, '#FFD700');
+              }
+              soundManager.play('score');
+              return;
+            }
+          }
+        }
+
+        // Пасхалка: клик по цветам
+        const flowers = flowersRef.current;
+        const flowerOffset = groundOffsetRef.current;
+        for (const flower of flowers) {
+          const flowerScreenX = ((flower.x - flowerOffset) % (width + 100) + width + 100) % (width + 100);
+          if (flowerScreenX > -50 && flowerScreenX < width + 50) {
+            const distance = Math.sqrt(Math.pow(canvasX - flowerScreenX, 2) + Math.pow(canvasY - flower.y, 2));
+            if (distance < flower.size * 3) {
+              setShuffleMode(!easterEggs.shuffleMode);
+              if (particleSystemRef.current) {
+                const colors = ['#FF1493', '#FFD700', '#32CD32'];
+                particleSystemRef.current.emit(flowerScreenX, flower.y, 12, colors[Math.floor(Math.random() * colors.length)]);
+              }
+              soundManager.play('score');
+              return;
+            }
+          }
+        }
       }
       startGame();
     }
-  }, [gameState, handleJump, startGame, width, height, easterEggs.matrixMode, easterEggs.nightMode, setPartyMode, setRainbowMode, setMatrixMode, setNightMode]);
+  }, [gameState, handleJump, startGame, width, height, easterEggs.matrixMode, easterEggs.nightMode, easterEggs.glowMode, easterEggs.shuffleMode, setPartyMode, setRainbowMode, setMatrixMode, setNightMode, setGlowMode, setShuffleMode]);
   
   // Обработчик touch событий для мобильных устройств
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -260,10 +295,45 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
             }
           }
         }
+
+        // Пасхалка: клик по птицам
+        const birds = birdsRef.current;
+        for (const bird of birds) {
+          if (bird.x > -50 && bird.x < width + 50) {
+            const distance = Math.sqrt(Math.pow(canvasX - bird.x, 2) + Math.pow(canvasY - bird.y, 2));
+            if (distance < bird.size * 3) {
+              setGlowMode(!easterEggs.glowMode);
+              if (particleSystemRef.current) {
+                particleSystemRef.current.emit(bird.x, bird.y, 15, '#FFD700');
+              }
+              soundManager.play('score');
+              return;
+            }
+          }
+        }
+
+        // Пасхалка: клик по цветам
+        const flowers = flowersRef.current;
+        const flowerOffset = groundOffsetRef.current;
+        for (const flower of flowers) {
+          const flowerScreenX = ((flower.x - flowerOffset) % (width + 100) + width + 100) % (width + 100);
+          if (flowerScreenX > -50 && flowerScreenX < width + 50) {
+            const distance = Math.sqrt(Math.pow(canvasX - flowerScreenX, 2) + Math.pow(canvasY - flower.y, 2));
+            if (distance < flower.size * 3) {
+              setShuffleMode(!easterEggs.shuffleMode);
+              if (particleSystemRef.current) {
+                const colors = ['#FF1493', '#FFD700', '#32CD32'];
+                particleSystemRef.current.emit(flowerScreenX, flower.y, 12, colors[Math.floor(Math.random() * colors.length)]);
+              }
+              soundManager.play('score');
+              return;
+            }
+          }
+        }
       }
       startGame();
     }
-  }, [gameState, handleJump, startGame, width, height, easterEggs.matrixMode, easterEggs.nightMode, setPartyMode, setRainbowMode, setMatrixMode, setNightMode]);
+  }, [gameState, handleJump, startGame, width, height, easterEggs.matrixMode, easterEggs.nightMode, easterEggs.glowMode, easterEggs.shuffleMode, setPartyMode, setRainbowMode, setMatrixMode, setNightMode, setGlowMode, setShuffleMode]);
   
   // Подключение обработки клавиатуры
   useKeyboard(handleJump);
@@ -444,6 +514,99 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Пасхалка: слово "bounce" - отскок от границ
   useSecretSequence(['b','o','u','n','c','e'], () => {
     setBounceMode(!easterEggs.bounceMode);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "secret" - комбо эффект
+  useSecretSequence(['s','e','c','r','e','t'], () => {
+    unlockSunglasses();
+    setGlowMode(true);
+    setRainbowMode(true);
+    if (particleSystemRef.current && duckRef.current) {
+      const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+      const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+      particleSystemRef.current.emit(centerX, centerY, 25, '#FF00FF');
+    }
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "magic" - волшебный эффект
+  useSecretSequence(['m','a','g','i','c'], () => {
+    setMatrixMode(true);
+    setGlowMode(true);
+    setRainbowMode(true);
+    if (particleSystemRef.current && duckRef.current) {
+      const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+      const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          if (particleSystemRef.current) {
+            const colors = ['#FF00FF', '#00FFFF', '#FFFF00', '#FF00FF'];
+            particleSystemRef.current.emit(centerX, centerY, 15, colors[i % colors.length]);
+          }
+        }, i * 100);
+      }
+    }
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "reset" - сброс всех эффектов
+  useSecretSequence(['r','e','s','e','t'], () => {
+    setPartyMode(false);
+    setRainbowMode(false);
+    setSlowmoMode(false);
+    setGodMode(false);
+    setInvertColors(false);
+    setMatrixMode(false);
+    setNightMode(false);
+    setSpeedMode(false);
+    setBigDuck(false);
+    setTinyDuck(false);
+    setFlipMode(false);
+    setDoubleJump(false);
+    setReverseGravity(false);
+    setChaosMode(false);
+    setZenMode(false);
+    setGlowMode(false);
+    setNinjaMode(false);
+    setShuffleMode(false);
+    setBounceMode(false);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "super" - супер режим
+  useSecretSequence(['s','u','p','e','r'], () => {
+    setGodMode(true);
+    setRainbowMode(true);
+    setGlowMode(true);
+    setDoubleJump(true);
+    unlockSunglasses();
+    if (particleSystemRef.current && duckRef.current) {
+      const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+      const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+      particleSystemRef.current.emit(centerX, centerY, 30, '#FFD700');
+    }
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "fun" - веселый режим
+  useSecretSequence(['f','u','n'], () => {
+    setPartyMode(true);
+    setRainbowMode(true);
+    setBounceMode(true);
+    if (particleSystemRef.current && duckRef.current) {
+      const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+      const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+      const colors = ['#FF3B30','#FF9500','#FFCC00','#34C759','#5AC8FA','#007AFF','#AF52DE'];
+      for (let i = 0; i < 10; i++) {
+        setTimeout(() => {
+          if (particleSystemRef.current) {
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            particleSystemRef.current.emit(centerX, centerY, 12, color);
+          }
+        }, i * 50);
+      }
+    }
     soundManager.play('score');
   });
   
@@ -1890,6 +2053,17 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Easter egg: score milestones
   useEffect(() => {
     if (gameState === GameState.PLAYING) {
+      if (score === 69) {
+        setPartyMode(true);
+        setRainbowMode(true);
+        unlockSunglasses();
+        if (particleSystemRef.current && duckRef.current) {
+          const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+          const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+          particleSystemRef.current.emit(centerX, centerY, 20, '#FF00FF');
+        }
+        soundManager.play('score');
+      }
       if (score === 100 && !easterEggs.rainbowMode) {
         setRainbowMode(true);
         soundManager.play('score');
@@ -1909,6 +2083,22 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         setSlowmoMode(true);
         soundManager.play('score');
       }
+      if (score === 420) {
+        setMatrixMode(true);
+        setGlowMode(true);
+        if (particleSystemRef.current && duckRef.current) {
+          const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+          const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+          for (let i = 0; i < 10; i++) {
+            setTimeout(() => {
+              if (particleSystemRef.current) {
+                particleSystemRef.current.emit(centerX, centerY, 12, '#00FF00');
+              }
+            }, i * 30);
+          }
+        }
+        soundManager.play('score');
+      }
       if (score === 500) {
         setGodMode(true);
         setRainbowMode(true);
@@ -1919,8 +2109,51 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           particleSystemRef.current.emit(centerX, centerY, 30, '#FFD700');
         }
       }
+      if (score === 777) {
+        setChaosMode(true);
+        setRainbowMode(true);
+        setGlowMode(true);
+        setDoubleJump(true);
+        unlockSunglasses();
+        if (particleSystemRef.current && duckRef.current) {
+          const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+          const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+          for (let i = 0; i < 15; i++) {
+            setTimeout(() => {
+              if (particleSystemRef.current) {
+                const colors = ['#FF00FF', '#00FFFF', '#FFFF00', '#FF0000', '#00FF00', '#0000FF'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particleSystemRef.current.emit(centerX, centerY, 15, color);
+              }
+            }, i * 50);
+          }
+        }
+        soundManager.play('score');
+      }
+      if (score === 1000) {
+        setGodMode(true);
+        setRainbowMode(true);
+        setGlowMode(true);
+        setDoubleJump(true);
+        setBounceMode(true);
+        unlockSunglasses();
+        if (particleSystemRef.current && duckRef.current) {
+          const centerX = duckRef.current.position.x + duckRef.current.width / 2;
+          const centerY = duckRef.current.position.y + duckRef.current.height / 2;
+          for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+              if (particleSystemRef.current) {
+                const colors = ['#FF3B30','#FF9500','#FFCC00','#34C759','#5AC8FA','#007AFF','#AF52DE'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                particleSystemRef.current.emit(centerX, centerY, 18, color);
+              }
+            }, i * 40);
+          }
+        }
+        soundManager.play('score');
+      }
     }
-  }, [score, gameState, easterEggs.rainbowMode, easterEggs.slowmoMode, setRainbowMode, setSlowmoMode, setGodMode]);
+  }, [score, gameState, easterEggs.rainbowMode, easterEggs.slowmoMode, easterEggs.matrixMode, easterEggs.glowMode, easterEggs.chaosMode, setRainbowMode, setSlowmoMode, setGodMode, setMatrixMode, setGlowMode, setChaosMode, setDoubleJump, setBounceMode, unlockSunglasses, setPartyMode]);
 
   // Подключение игрового цикла
   useGameLoop({
