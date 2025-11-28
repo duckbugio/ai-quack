@@ -40,7 +40,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   height = CANVAS_HEIGHT,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, easterEggs, setPartyMode, unlockSunglasses, setRainbowMode, setSlowmoMode, setGodMode, setInvertColors } =
+  const { gameState, score, highScore, startGame, gameOver, incrementScore, pauseGame, resumeGame, easterEggs, setPartyMode, unlockSunglasses, setRainbowMode, setSlowmoMode, setGodMode, setInvertColors, setMatrixMode, setNightMode, setSpeedMode, setBigDuck, setTinyDuck, setFlipMode } =
     useGame();
   
   // Инициализация игровых объектов (создаются один раз)
@@ -133,10 +133,47 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           soundManager.play('score');
           return;
         }
+
+        // Пасхалка: клик по облакам
+        const offset = cloudOffsetRef.current;
+        const cloudPositions = [
+          { x: 200 + offset, y: 100, size: 35 },
+          { x: 500 + offset, y: 80, size: 30 },
+          { x: 700 + offset, y: 120, size: 32 },
+          { x: 350 + offset, y: 150, size: 25 },
+          { x: 600 + offset, y: 60, size: 28 },
+        ];
+        for (const cloud of cloudPositions) {
+          const cloudScreenX = ((cloud.x % width) + width) % width;
+          const distance = Math.sqrt(Math.pow(canvasX - cloudScreenX, 2) + Math.pow(canvasY - cloud.y, 2));
+          if (distance < cloud.size * 1.5) {
+            setMatrixMode(!easterEggs.matrixMode);
+            soundManager.play('score');
+            return;
+          }
+        }
+
+        // Пасхалка: клик по деревьям
+        const trees = treesRef.current;
+        const groundY = height - 50;
+        const treeOffset = treesOffsetRef.current;
+        for (const tree of trees) {
+          const treeScreenX = tree.x - treeOffset;
+          if (treeScreenX > -100 && treeScreenX < width + 100) {
+            const treeBaseY = groundY;
+            const treeTopY = treeBaseY - tree.height;
+            if (canvasX >= treeScreenX - 50 && canvasX <= treeScreenX + 50 && 
+                canvasY >= treeTopY && canvasY <= treeBaseY) {
+              setNightMode(!easterEggs.nightMode);
+              soundManager.play('score');
+              return;
+            }
+          }
+        }
       }
       startGame();
     }
-  }, [gameState, handleJump, startGame, width]);
+  }, [gameState, handleJump, startGame, width, height, easterEggs.matrixMode, easterEggs.nightMode, setPartyMode, setRainbowMode, setMatrixMode, setNightMode]);
   
   // Обработчик touch событий для мобильных устройств
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -166,10 +203,47 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           soundManager.play('score');
           return;
         }
+
+        // Пасхалка: клик по облакам
+        const offset = cloudOffsetRef.current;
+        const cloudPositions = [
+          { x: 200 + offset, y: 100, size: 35 },
+          { x: 500 + offset, y: 80, size: 30 },
+          { x: 700 + offset, y: 120, size: 32 },
+          { x: 350 + offset, y: 150, size: 25 },
+          { x: 600 + offset, y: 60, size: 28 },
+        ];
+        for (const cloud of cloudPositions) {
+          const cloudScreenX = ((cloud.x % width) + width) % width;
+          const distance = Math.sqrt(Math.pow(canvasX - cloudScreenX, 2) + Math.pow(canvasY - cloud.y, 2));
+          if (distance < cloud.size * 1.5) {
+            setMatrixMode(!easterEggs.matrixMode);
+            soundManager.play('score');
+            return;
+          }
+        }
+
+        // Пасхалка: клик по деревьям
+        const trees = treesRef.current;
+        const groundY = height - 50;
+        const treeOffset = treesOffsetRef.current;
+        for (const tree of trees) {
+          const treeScreenX = tree.x - treeOffset;
+          if (treeScreenX > -100 && treeScreenX < width + 100) {
+            const treeBaseY = groundY;
+            const treeTopY = treeBaseY - tree.height;
+            if (canvasX >= treeScreenX - 50 && canvasX <= treeScreenX + 50 && 
+                canvasY >= treeTopY && canvasY <= treeBaseY) {
+              setNightMode(!easterEggs.nightMode);
+              soundManager.play('score');
+              return;
+            }
+          }
+        }
       }
       startGame();
     }
-  }, [gameState, handleJump, startGame, width, setPartyMode, setRainbowMode]);
+  }, [gameState, handleJump, startGame, width, height, easterEggs.matrixMode, easterEggs.nightMode, setPartyMode, setRainbowMode, setMatrixMode, setNightMode]);
   
   // Подключение обработки клавиатуры
   useKeyboard(handleJump);
@@ -240,6 +314,48 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   useSecretSequence(['1','3','3','7'], () => {
     setGodMode(true);
     setRainbowMode(true);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "matrix" - включает эффект матрицы
+  useSecretSequence(['m','a','t','r','i','x'], () => {
+    setMatrixMode(!easterEggs.matrixMode);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "moon" - включает ночной режим
+  useSecretSequence(['m','o','o','n'], () => {
+    setNightMode(!easterEggs.nightMode);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "speed" - включает ускорение игры
+  useSecretSequence(['s','p','e','e','d'], () => {
+    setSpeedMode(!easterEggs.speedMode);
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "big" - увеличивает утку
+  useSecretSequence(['b','i','g'], () => {
+    setBigDuck(!easterEggs.bigDuck);
+    if (easterEggs.bigDuck) {
+      setTinyDuck(false);
+    }
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "tiny" - уменьшает утку
+  useSecretSequence(['t','i','n','y'], () => {
+    setTinyDuck(!easterEggs.tinyDuck);
+    if (easterEggs.tinyDuck) {
+      setBigDuck(false);
+    }
+    soundManager.play('score');
+  });
+
+  // Пасхалка: слово "flip" - переворачивает экран
+  useSecretSequence(['f','l','i','p'], () => {
+    setFlipMode(!easterEggs.flipMode);
     soundManager.play('score');
   });
   
@@ -440,8 +556,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Игровой цикл: обновление состояния
   const update = useCallback(
     (deltaTime: number) => {
-      // Применяем slowmo эффект
-      const effectiveDeltaTime = easterEggs.slowmoMode ? deltaTime * 0.5 : deltaTime;
+      // Применяем slowmo и speed эффекты
+      let effectiveDeltaTime = deltaTime;
+      if (easterEggs.slowmoMode) {
+        effectiveDeltaTime *= 0.5;
+      }
+      if (easterEggs.speedMode) {
+        effectiveDeltaTime *= 1.5;
+      }
       
       // Вычисляем множитель сложности на основе текущего счета
       const difficultyMultiplier = getDifficultyMultiplier(score);
@@ -450,8 +572,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Обновление облаков (работает всегда для плавной анимации)
       updateClouds(deltaTime);
       
-      // Обновление земли с учетом сложности (работает всегда для плавной анимации)
-      updateGround(deltaTime, difficultyMultiplier);
+      // Обновление земли с учетом сложности и speed mode (работает всегда для плавной анимации)
+      const groundSpeedMultiplier = easterEggs.speedMode ? difficultyMultiplier * 1.5 : difficultyMultiplier;
+      updateGround(deltaTime, groundSpeedMultiplier);
       
       // Обновление деревьев (параллакс-эффект)
       updateTrees(deltaTime);
@@ -485,8 +608,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
 
-      // Обновление препятствий с учетом прогрессивной сложности
-      obstacleManager.update(effectiveDeltaTime, difficultyMultiplier, currentSpacing);
+      // Обновление препятствий с учетом прогрессивной сложности и speed mode
+      const obstacleSpeedMultiplier = easterEggs.speedMode ? difficultyMultiplier * 1.5 : difficultyMultiplier;
+      obstacleManager.update(effectiveDeltaTime, obstacleSpeedMultiplier, currentSpacing);
 
       // Обновление системы частиц
       if (particleSystemRef.current) {
@@ -509,7 +633,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         return;
       }
     },
-    [gameState, height, score, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds, emitPartyModeConfetti, easterEggs.slowmoMode, easterEggs.godMode]
+    [gameState, height, score, checkCollisions, gameOver, updateClouds, updateGround, updateTrees, updateBirds, emitPartyModeConfetti, easterEggs.slowmoMode, easterEggs.speedMode, easterEggs.godMode]
   );
 
   // Анимация счета при изменении
@@ -625,43 +749,92 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   // Функция отрисовки неба с градиентом
   const drawSky = useCallback(
     (ctx: CanvasRenderingContext2D) => {
-      const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, '#87CEEB'); // Небесно-голубой
-      gradient.addColorStop(1, '#E0F6FF'); // Светло-голубой
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-      
-      // Отрисовка солнца
-      const sunX = width - 150;
-      const sunY = 80;
-      const sunRadius = 40;
-      
-      // Внешнее свечение солнца
-      const sunGradient = ctx.createRadialGradient(
-        sunX, sunY, 0,
-        sunX, sunY, sunRadius * 1.5
-      );
-      sunGradient.addColorStop(0, 'rgba(255, 255, 200, 0.6)');
-      sunGradient.addColorStop(0.7, 'rgba(255, 255, 150, 0.3)');
-      sunGradient.addColorStop(1, 'rgba(255, 255, 100, 0)');
-      ctx.fillStyle = sunGradient;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius * 1.5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Основное солнце
-      const sunMainGradient = ctx.createRadialGradient(
-        sunX, sunY, 0,
-        sunX, sunY, sunRadius
-      );
-      sunMainGradient.addColorStop(0, '#FFEB3B'); // Ярко-желтый
-      sunMainGradient.addColorStop(1, '#FFC107'); // Золотистый
-      ctx.fillStyle = sunMainGradient;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-      ctx.fill();
+      if (easterEggs.nightMode) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, '#0A0A2E'); // Темно-синий
+        gradient.addColorStop(1, '#16213E'); // Темно-серый
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+        
+        // Отрисовка луны
+        const moonX = width - 150;
+        const moonY = 80;
+        const moonRadius = 35;
+        
+        // Свечение луны
+        const moonGradient = ctx.createRadialGradient(
+          moonX, moonY, 0,
+          moonX, moonY, moonRadius * 1.5
+        );
+        moonGradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+        moonGradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.2)');
+        moonGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = moonGradient;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonRadius * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Основная луна
+        const moonMainGradient = ctx.createRadialGradient(
+          moonX, moonY, 0,
+          moonX, moonY, moonRadius
+        );
+        moonMainGradient.addColorStop(0, '#E8E8E8'); // Светло-серый
+        moonMainGradient.addColorStop(1, '#C0C0C0'); // Серый
+        ctx.fillStyle = moonMainGradient;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Звезды
+        ctx.fillStyle = '#FFFFFF';
+        for (let i = 0; i < 50; i++) {
+          const starX = (i * 37) % width;
+          const starY = (i * 23) % (height * 0.7);
+          const starSize = Math.random() * 2;
+          ctx.beginPath();
+          ctx.arc(starX, starY, starSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        const gradient = ctx.createLinearGradient(0, 0, 0, height);
+        gradient.addColorStop(0, '#87CEEB'); // Небесно-голубой
+        gradient.addColorStop(1, '#E0F6FF'); // Светло-голубой
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+        
+        // Отрисовка солнца
+        const sunX = width - 150;
+        const sunY = 80;
+        const sunRadius = 40;
+        
+        // Внешнее свечение солнца
+        const sunGradient = ctx.createRadialGradient(
+          sunX, sunY, 0,
+          sunX, sunY, sunRadius * 1.5
+        );
+        sunGradient.addColorStop(0, 'rgba(255, 255, 200, 0.6)');
+        sunGradient.addColorStop(0.7, 'rgba(255, 255, 150, 0.3)');
+        sunGradient.addColorStop(1, 'rgba(255, 255, 100, 0)');
+        ctx.fillStyle = sunGradient;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, sunRadius * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Основное солнце
+        const sunMainGradient = ctx.createRadialGradient(
+          sunX, sunY, 0,
+          sunX, sunY, sunRadius
+        );
+        sunMainGradient.addColorStop(0, '#FFEB3B'); // Ярко-желтый
+        sunMainGradient.addColorStop(1, '#FFC107'); // Золотистый
+        ctx.fillStyle = sunMainGradient;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
     },
-    [width, height]
+    [width, height, easterEggs.nightMode]
   );
 
   // Функция отрисовки облаков с улучшенной визуализацией
@@ -1191,8 +1364,23 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       // Отрисовка препятствий
       obstacleManager.draw(ctx);
 
-      // Отрисовка утки (поверх всего)
+      // Отрисовка утки (поверх всего) с изменением размера
+      ctx.save();
+      if (easterEggs.bigDuck) {
+        const centerX = duck.position.x + duck.width / 2;
+        const centerY = duck.position.y + duck.height / 2;
+        ctx.translate(centerX, centerY);
+        ctx.scale(1.5, 1.5);
+        ctx.translate(-centerX, -centerY);
+      } else if (easterEggs.tinyDuck) {
+        const centerX = duck.position.x + duck.width / 2;
+        const centerY = duck.position.y + duck.height / 2;
+        ctx.translate(centerX, centerY);
+        ctx.scale(0.6, 0.6);
+        ctx.translate(-centerX, -centerY);
+      }
       duck.draw(ctx);
+      ctx.restore();
 
       // Easter egg: sunglasses on the duck
       if (easterEggs.sunglassesUnlocked || easterEggs.partyMode) {
@@ -1253,6 +1441,51 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         const slowmoText = 'SLOWMO';
         ctx.strokeText(slowmoText, 20, height - 70);
         ctx.fillText(slowmoText, 20, height - 70);
+        ctx.restore();
+      }
+
+      // Индикатор speed mode
+      if (easterEggs.speedMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#FF00FF';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const speedText = 'SPEED';
+        ctx.strokeText(speedText, 20, height - 100);
+        ctx.fillText(speedText, 20, height - 100);
+        ctx.restore();
+      }
+
+      // Индикатор matrix mode
+      if (easterEggs.matrixMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#00FF00';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const matrixText = 'MATRIX';
+        ctx.strokeText(matrixText, 20, height - 130);
+        ctx.fillText(matrixText, 20, height - 130);
+        ctx.restore();
+      }
+
+      // Индикатор night mode
+      if (easterEggs.nightMode) {
+        ctx.save();
+        ctx.font = 'bold 16px Arial';
+        ctx.fillStyle = '#8B00FF';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const nightText = 'NIGHT';
+        ctx.strokeText(nightText, 20, height - 160);
+        ctx.fillText(nightText, 20, height - 160);
         ctx.restore();
       }
 
@@ -1342,6 +1575,42 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
     }
 
+    // Применяем переворот экрана если включен
+    if (easterEggs.flipMode) {
+      const imageData = ctx.getImageData(0, 0, width, height);
+      const data = imageData.data;
+      const flippedData = new Uint8ClampedArray(data.length);
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const srcIndex = (y * width + x) * 4;
+          const dstIndex = (y * width + (width - 1 - x)) * 4;
+          flippedData[dstIndex] = data[srcIndex];
+          flippedData[dstIndex + 1] = data[srcIndex + 1];
+          flippedData[dstIndex + 2] = data[srcIndex + 2];
+          flippedData[dstIndex + 3] = data[srcIndex + 3];
+        }
+      }
+      const flippedImageData = new ImageData(flippedData, width, height);
+      ctx.putImageData(flippedImageData, 0, 0);
+    }
+
+    // Применяем эффект матрицы если включен
+    if (easterEggs.matrixMode) {
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = '#00FF00';
+      ctx.font = '12px monospace';
+      const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+      for (let i = 0; i < 100; i++) {
+        const x = (i * 37 + Date.now() / 10) % width;
+        const y = (i * 23 + Date.now() / 5) % height;
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(char, x, y);
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
     // Применяем инверсию цветов если включена (в конце всей отрисовки)
     if (easterEggs.invertColors) {
       const imageData = ctx.getImageData(0, 0, width, height);
@@ -1353,7 +1622,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       }
       ctx.putImageData(imageData, 0, 0);
     }
-    }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround, drawTrees, drawFlowers, drawBirds, easterEggs.sunglassesUnlocked, easterEggs.partyMode, easterEggs.rainbowMode, easterEggs.invertColors, easterEggs.godMode, easterEggs.slowmoMode, getRainbowColor]);
+    }, [gameState, width, height, drawScore, drawHighScore, highScore, score, drawSky, drawClouds, drawGround, drawTrees, drawFlowers, drawBirds, easterEggs.sunglassesUnlocked, easterEggs.partyMode, easterEggs.rainbowMode, easterEggs.invertColors, easterEggs.godMode, easterEggs.slowmoMode, easterEggs.matrixMode, easterEggs.flipMode, easterEggs.bigDuck, easterEggs.tinyDuck, getRainbowColor]);
   
   // Unlock sunglasses when the score reaches 42
   useEffect(() => {

@@ -18,6 +18,12 @@ interface GameContextType {
     slowmoMode: boolean;
     godMode: boolean;
     invertColors: boolean;
+    matrixMode: boolean;
+    nightMode: boolean;
+    speedMode: boolean;
+    bigDuck: boolean;
+    tinyDuck: boolean;
+    flipMode: boolean;
   };
   startGame: () => void;
   pauseGame: () => void;
@@ -32,6 +38,12 @@ interface GameContextType {
   setSlowmoMode: (enabled: boolean) => void;
   setGodMode: (enabled: boolean) => void;
   setInvertColors: (enabled: boolean) => void;
+  setMatrixMode: (enabled: boolean) => void;
+  setNightMode: (enabled: boolean) => void;
+  setSpeedMode: (enabled: boolean) => void;
+  setBigDuck: (enabled: boolean) => void;
+  setTinyDuck: (enabled: boolean) => void;
+  setFlipMode: (enabled: boolean) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -49,6 +61,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [slowmoMode, setSlowmoModeState] = useState<boolean>(false);
   const [godMode, setGodModeState] = useState<boolean>(false);
   const [invertColors, setInvertColorsState] = useState<boolean>(false);
+  const [matrixMode, setMatrixModeState] = useState<boolean>(false);
+  const [nightMode, setNightModeState] = useState<boolean>(false);
+  const [speedMode, setSpeedModeState] = useState<boolean>(false);
+  const [bigDuck, setBigDuckState] = useState<boolean>(false);
+  const [tinyDuck, setTinyDuckState] = useState<boolean>(false);
+  const [flipMode, setFlipModeState] = useState<boolean>(false);
   const [highScore, setHighScore] = useState(() => {
     try {
       const saved = localStorage.getItem('duck-game-highscore');
@@ -122,6 +140,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setSlowmoModeState(false);
     setGodModeState(false);
     setInvertColorsState(false);
+    setMatrixModeState(false);
+    setNightModeState(false);
+    setSpeedModeState(false);
+    setBigDuckState(false);
+    setTinyDuckState(false);
+    setFlipModeState(false);
   };
 
   const incrementScore = () => setScore((prev) => prev + 1);
@@ -162,6 +186,30 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setInvertColorsState(enabled);
   };
 
+  const setMatrixMode = (enabled: boolean) => {
+    setMatrixModeState(enabled);
+  };
+
+  const setNightMode = (enabled: boolean) => {
+    setNightModeState(enabled);
+  };
+
+  const setSpeedMode = (enabled: boolean) => {
+    setSpeedModeState(enabled);
+  };
+
+  const setBigDuck = (enabled: boolean) => {
+    setBigDuckState(enabled);
+  };
+
+  const setTinyDuck = (enabled: boolean) => {
+    setTinyDuckState(enabled);
+  };
+
+  const setFlipMode = (enabled: boolean) => {
+    setFlipModeState(enabled);
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -176,6 +224,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
           slowmoMode,
           godMode,
           invertColors,
+          matrixMode,
+          nightMode,
+          speedMode,
+          bigDuck,
+          tinyDuck,
+          flipMode,
         },
         startGame,
         pauseGame,
@@ -190,6 +244,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setSlowmoMode,
         setGodMode,
         setInvertColors,
+        setMatrixMode,
+        setNightMode,
+        setSpeedMode,
+        setBigDuck,
+        setTinyDuck,
+        setFlipMode,
       }}
     >
       {children}
