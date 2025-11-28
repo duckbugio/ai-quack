@@ -2,10 +2,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { GameState } from '../types/game.types';
 import { soundManager } from '../game/utils/SoundManager';
 
-/**
- * Интерфейс контекста игры
- * Содержит состояние игры и методы для управления им
- */
 interface GameContextType {
   gameState: GameState;
   score: number;
@@ -22,10 +18,6 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-/**
- * Провайдер контекста игры
- * Управляет состоянием игры, счетом и лучшим результатом
- */
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [gameState, setGameState] = useState<GameState>(GameState.MENU);
   const [score, setScore] = useState(0);
@@ -34,13 +26,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const saved = localStorage.getItem('duck-game-highscore');
       if (saved) {
         const parsed = parseInt(saved, 10);
-        // Валидация: проверяем, что это валидное неотрицательное число
         if (!isNaN(parsed) && parsed >= 0) {
           return parsed;
         }
       }
     } catch (error) {
-      // localStorage может быть недоступен (например, в приватном режиме)
       if (import.meta.env.DEV) {
         console.warn('Не удалось загрузить лучший результат из localStorage:', error);
       }
@@ -59,10 +49,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         console.warn('Не удалось загрузить настройку звуков из localStorage:', error);
       }
     }
-    return true; // По умолчанию звуки включены
+    return true;
   });
   
-  // Синхронизация состояния звуков с SoundManager при инициализации и изменении
   useEffect(() => {
     soundManager.setEnabled(soundEnabled);
   }, [soundEnabled]);
@@ -80,13 +69,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     if (score > highScore) {
       const newHighScore = score;
       setHighScore(newHighScore);
-      // Проигрываем звук при установке нового рекорда
-      // Используем звук score, так как это достижение
       soundManager.play('score');
       try {
         localStorage.setItem('duck-game-highscore', newHighScore.toString());
       } catch (error) {
-        // localStorage может быть недоступен (например, переполнение или приватный режим)
         if (import.meta.env.DEV) {
           console.warn('Не удалось сохранить лучший результат в localStorage:', error);
         }
@@ -134,11 +120,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/**
- * Хук для использования контекста игры
- * @throws Error если используется вне GameProvider
- * @returns Контекст игры
- */
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) {
