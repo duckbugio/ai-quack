@@ -8,16 +8,9 @@ import { GameState } from './types/game.types';
 import { useState } from 'react';
 import './App.css';
 
-/**
- * Компонент содержимого приложения
- * Использует контекст игры для условного рендеринга
- */
 const AppContent = () => {
   const { gameState } = useGame();
   
-  // Проверяем, включен ли overlay производительности через localStorage
-  // Можно включить через консоль: localStorage.setItem('duck-game-show-performance', 'true')
-  // Используем useState для оптимизации (проверка только при монтировании компонента)
   const [showPerformance] = useState(() => {
     return localStorage.getItem('duck-game-show-performance') === 'true';
   });
@@ -33,9 +26,6 @@ const AppContent = () => {
   );
 };
 
-/**
- * Главный компонент приложения
- */
 function App() {
   return (
     <GameProvider>
