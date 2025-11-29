@@ -49,6 +49,19 @@ export const DUCK_START_Y = CANVAS_HEIGHT / 2;
 /** Интервал между появлением новых препятствий (равен PIPE_SPACING) */
 export const OBSTACLE_SPAWN_INTERVAL = PIPE_SPACING;
 
+// Background rendering constants
+export const PARALLAX_SPEED_MULTIPLIER = 0.3;
+export const CLOUD_SPEED = 0.1;
+export const RESIZE_DEBOUNCE_MS = 150;
+export const ORIENTATION_CHANGE_DELAY_MS = 100;
+export const VISIBILITY_MARGIN = 50;
+export const TREE_SPACING_MIN = 250;
+export const TREE_SPACING_VARIANCE = 100;
+export const BIRD_WING_ANIMATION_INTERVAL = 150;
+export const BIRD_VERTICAL_AMPLITUDE = 0.3;
+export const BIRD_MIN_Y = 50;
+export const GROUND_HEIGHT = 50;
+
 // Объект конфигурации игры
 export const GAME_CONFIG = {
   canvas: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
